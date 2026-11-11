@@ -697,6 +697,7 @@
     '<div class="save-sheet-actions">' +
     '<button type="button" class="btn ghost" data-act="close">닫기</button>' +
     '<a class="btn primary" data-act="download">이미지 저장</a>' +
+    '<button type="button" class="btn primary" data-act="share" hidden>사진 앱에 저장</button>' +
     "</div>" +
     '<button type="button" class="save-sheet-ext" data-act="external">저장이 안 되면 다른 브라우저로 열기</button>' +
     "</div>";
@@ -705,6 +706,27 @@
   const sheetTip = sheet.querySelector(".save-sheet-tip");
   const sheetDl = sheet.querySelector('[data-act="download"]');
   const sheetExt = sheet.querySelector('[data-act="external"]');
+  const sheetShare = sheet.querySelector('[data-act="share"]');
+  let sheetFile = null;
+
+  // iPhone: the share menu's "이미지 저장" is the only button-based way into the Photos app.
+  // The file is fetched as soon as the sheet opens, so the tap itself can open the menu at once
+  // (iOS only allows the share menu straight from a tap).
+  async function prepareIosShare(src) {
+    sheetFile = null;
+    sheetShare.hidden = true;
+    try {
+      if (!navigator.share || !navigator.canShare || typeof File !== "function") return;
+      const r = await fetch(src);
+      if (!r.ok) return;
+      const file = new File([await r.blob()], "eungwon-" + src.split("/").pop(), { type: "image/jpeg" });
+      if (navigator.canShare({ files: [file] }) && sheetImg.getAttribute("src") === src) {
+        sheetFile = file;
+        sheetShare.hidden = false;
+        sheetTip.innerHTML = "<b>사진 앱에 저장</b> → <b>‘이미지 저장’</b>을 누르거나,<br>이미지를 길게 눌러 <b>‘사진 앱에 저장’</b>을 눌러 주세요.";
+      }
+    } catch (_) { /* long-press still works */ }
+  }
 
   function openSheet(src, name) {
     sheetImg.src = src;
@@ -714,6 +736,7 @@
       // on iPhone a download goes to the Files app, so long-press → Photos is the way
       sheetTip.innerHTML = "<b>이미지를 길게 눌러 ‘사진 앱에 저장’</b>을 누르면<br>사진첩에 바로 저장돼요.";
       sheetDl.hidden = true;
+      prepareIosShare(src);
     } else {
       sheetTip.innerHTML = "<b>이미지 저장</b> 버튼을 누르거나,<br>이미지를 길게 눌러 ‘이미지 저장’을 눌러 주세요.";
       sheetDl.hidden = false;
@@ -733,6 +756,8 @@
     const act = e.target.closest("[data-act]");
     if (e.target === sheet || (act && act.dataset.act === "close")) {
       sheet.hidden = true;
+    } else if (act && act.dataset.act === "share") {
+      if (sheetFile) navigator.share({ files: [sheetFile] }).catch(() => {});
     } else if (act && act.dataset.act === "external") {
       // reopen this page in the phone's own browser, already showing this card
       const target = location.origin + location.pathname + "?save=" + String(+sheetImg.dataset.i + 1).padStart(2, "0");
