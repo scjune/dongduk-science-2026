@@ -668,43 +668,114 @@
     ctx.font = '26px "Gowun Dodum", sans-serif';
     ctx.fillText("동덕여자고등학교 과학과", 540, 1250);
 
-    return new Promise((res) => cv.toBlob(res, "image/png"));
+    const blob = await new Promise((res) => cv.toBlob(res, "image/png"));
+    return { blob, dataUrl: cv.toDataURL("image/png") };
   }
 
+  // local preview only: lets the card PNGs in cards/ be (re)generated from the browser
+  if (location.hostname === "localhost") window.__makeCard = (i) => makeCardBlob(MESSAGES[i]);
+
   const saveBtn = $("saveBtn");
+  const UA = navigator.userAgent || "";
+  const IN_KAKAO = /KAKAOTALK/i.test(UA);
+  // in-app browsers (KakaoTalk, Instagram, Naver, Facebook, Line, Android WebView) can't save
+  // images made on the fly, so they get the ready-made card file from cards/NN.png instead
+  const IN_APP = IN_KAKAO || /Instagram|NAVER|FBAN|FBAV|Line\/|; wv\)/i.test(UA);
+  const IS_PHONE = window.matchMedia("(pointer: coarse)").matches;
+  const cardPath = (i) => "cards/" + String(i + 1).padStart(2, "0") + ".jpg";
+
+  // sheet showing the finished card: long-press the picture, or use the download button
+  const sheet = document.createElement("div");
+  sheet.className = "save-sheet";
+  sheet.hidden = true;
+  sheet.innerHTML =
+    '<div class="save-sheet-box" role="dialog" aria-modal="true" aria-label="응원 카드 저장">' +
+    '<img alt="응원 카드 이미지">' +
+    '<p class="save-sheet-tip"></p>' +
+    '<div class="save-sheet-actions">' +
+    '<button type="button" class="btn ghost" data-act="close">닫기</button>' +
+    '<a class="btn primary" data-act="download">이미지 다운로드</a>' +
+    "</div>" +
+    '<button type="button" class="save-sheet-ext" data-act="external">저장이 안 되면 다른 브라우저로 열기</button>' +
+    "</div>";
+  document.body.appendChild(sheet);
+  const sheetImg = sheet.querySelector("img");
+  const sheetTip = sheet.querySelector(".save-sheet-tip");
+  const sheetDl = sheet.querySelector('[data-act="download"]');
+  const sheetExt = sheet.querySelector('[data-act="external"]');
+
+  function openSheet(src, name) {
+    sheetImg.src = src;
+    sheetDl.href = src;
+    sheetDl.setAttribute("download", name);
+    sheetTip.innerHTML = "<b>이미지를 길게 눌러 ‘이미지 저장’</b>을 누르거나,<br>아래 <b>이미지 다운로드</b> 버튼을 눌러 주세요.";
+    sheetExt.hidden = !IN_APP;
+    sheet.hidden = false;
+  }
+  sheet.addEventListener("click", (e) => {
+    const act = e.target.closest("[data-act]");
+    if (e.target === sheet || (act && act.dataset.act === "close")) {
+      sheet.hidden = true;
+    } else if (act && act.dataset.act === "external") {
+      if (IN_KAKAO) location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href);
+      else sheetTip.innerHTML = "오른쪽 위 메뉴(⋮ 또는 ···)에서 <b>‘다른 브라우저로 열기’</b>를 눌러 주세요.";
+    }
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !sheet.hidden) sheet.hidden = true; });
+
+  async function getCard(i) {
+    // prefer the ready-made file (a real web address works in every app);
+    // fall back to drawing it here if that file doesn't exist yet
+    try {
+      const r = await fetch(cardPath(i), { cache: "force-cache" });
+      if (r.ok) {
+        const blob = await r.blob();
+        return { blob, src: cardPath(i), isFile: true };
+      }
+    } catch (_) { /* fall through */ }
+    const { blob, dataUrl } = await makeCardBlob(MESSAGES[i]);
+    return { blob, src: dataUrl, isFile: false };
+  }
+
   saveBtn.addEventListener("click", async () => {
     if (currentIndex < 0) return;
+    const i = currentIndex;
     const label = saveBtn.querySelector("span");
     const original = label.textContent;
     saveBtn.disabled = true;
-    label.textContent = "카드를 만드는 중…";
+    label.textContent = "카드를 준비하는 중…";
     try {
-      const blob = await makeCardBlob(MESSAGES[currentIndex]);
-      const name = "응원한송이_" + String(currentIndex + 1).padStart(2, "0") + ".png";
-      const file = new File([blob], name, { type: "image/png" });
-      const isPhone = window.matchMedia("(pointer: coarse)").matches;
-      if (isPhone && navigator.canShare && navigator.canShare({ files: [file] })) {
-        // phones: open the share sheet so it can be saved to the photo album
-        await navigator.share({ files: [file], title: "응원 한 송이" }).catch(() => {});
+      const card = await getCard(i);
+      const name = "eungwon-" + String(i + 1).padStart(2, "0") + (card.isFile ? ".jpg" : ".png");
+      const file = new File([card.blob], name, { type: card.blob.type || "image/png" });
+      if (IN_APP || IS_PHONE) {
+        if (!IN_APP && navigator.canShare && navigator.canShare({ files: [file] })) {
+          // phone browsers: share sheet → "이미지 저장" puts it in the photo album
+          try {
+            await navigator.share({ files: [file], title: "응원 한 송이" });
+          } catch (err) {
+            if (err && err.name !== "AbortError") openSheet(card.src, name);
+          }
+        } else {
+          openSheet(card.src, name);
+        }
       } else {
-        const url = URL.createObjectURL(blob);
+        const url = card.isFile ? card.src : URL.createObjectURL(file);
         const a = document.createElement("a");
         a.href = url;
         a.download = name;
         document.body.appendChild(a);
         a.click();
         a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 4000);
+        if (!card.isFile) setTimeout(() => URL.revokeObjectURL(url), 4000);
       }
-      label.textContent = "저장했어요";
+      label.textContent = original;
     } catch (err) {
       console.error(err);
       label.textContent = "저장하지 못했어요. 다시 눌러 주세요";
+      setTimeout(() => (label.textContent = original), 1800);
     }
-    setTimeout(() => {
-      label.textContent = original;
-      saveBtn.disabled = false;
-    }, 1800);
+    saveBtn.disabled = false;
   });
 
   /* ---------------- boll interaction ---------------- */
