@@ -47,29 +47,31 @@
     return d + "Z";
   }
 
-  const PUFFS = [[0, -14, 16], [-16, -3, 15], [16, -3, 15], [-10, 12, 14], [10, 12, 14], [0, 0, 15]];
-  const COTTON_MARKUP =
-    '<path class="calyx" d="' + star(5, 38, 14, -54, 4) + '"/>' +
+  const cottonMarkup = (n, puffs) =>
+    '<path class="calyx" d="' + star(n, 38, 14, n === 5 ? -54 : -45, 4) + '"/>' +
     '<g class="puffs" filter="url(#fuzz)">' +
-    PUFFS.map((p) => '<circle class="puff" cx="' + p[0] + '" cy="' + p[1] + '" r="' + p[2] + '"/>').join("") +
+    puffs.map((p) => '<circle class="puff" cx="' + p[0] + '" cy="' + p[1] + '" r="' + p[2] + '"/>').join("") +
     "</g>";
+  // a real boll splits into 4–5 locks; mix both for a natural look
+  const COTTON_MARKUP = cottonMarkup(5, [[0, -14, 16], [-16, -3, 15], [16, -3, 15], [-10, 12, 14], [10, 12, 14], [0, 0, 15]]);
+  const COTTON_MARKUP_4 = cottonMarkup(4, [[-10, -9, 15], [10, -9, 15], [-10, 9, 15], [10, 9, 15], [0, 0, 13]]);
 
   // a ripe boll just before it bursts: dried brown sepals, a tan pod
   // cracking along its seams with white cotton peeking through
   const CAPSULE_MARKUP =
-    '<path class="calyx" d="' + star(5, 34, 13, -54, 12) + '"/>' +
-    '<path class="pod" d="M0 -30 C 15 -28 21 -6 19 8 C 17 22 8 27 0 27 C -8 27 -17 22 -19 8 C -21 -6 -15 -28 0 -30 Z"/>' +
-    '<g class="cracks" filter="url(#fuzz)">' +
-    '<path d="M0 -28 Q 4 -2 0 24"/>' +
-    '<path d="M-3 -27 Q -14 -2 -11 18"/>' +
-    '<path d="M3 -27 Q 14 -2 11 18"/>' +
-    '<path class="peek" d="M-7 -26 Q 0 -40 7 -26 Q 0 -22 -7 -26 Z"/>' +
+    '<g transform="scale(.72)">' +
+    '<path class="calyx" d="' + star(5, 30, 12, -54, 10) + '"/>' +
+    '<path class="pod" d="M0 -20 C 14 -20 19 -6 18 5 C 17 16 9 21 0 21 C -9 21 -17 16 -18 5 C -19 -6 -14 -20 0 -20 Z"/>' +
+    '<path class="seam" d="M0 -18 Q 2 0 0 18"/>' +
+    '<ellipse class="shine" cx="-7" cy="-5" rx="3.5" ry="6"/>' +
+    '<g class="tuft" filter="url(#fuzz)">' +
+    '<circle cx="-7" cy="-19" r="7"/><circle cx="7" cy="-19" r="7"/><circle cx="0" cy="-24" r="8.5"/>' +
     "</g>" +
-    '<ellipse class="shine" cx="-8" cy="-10" rx="3.5" ry="7"/>';
+    "</g>";
   const BRACT_D ="M-3 22 C -18 26 -34 14 -33 -4 L -27 1 L -29 -11 L -21 -4 L -20 -16 L -13 -3 C -10 8 -6 16 -3 22 Z";
   const BOLL_MARKUP =
     '<circle class="hit" r="46"/>' +
-    '<circle class="halo" r="44" fill="url(#gHalo)"/>' +
+    '<circle class="halo" r="32" fill="url(#gHalo)"/>' +
     '<g class="capsule">' + CAPSULE_MARKUP + "</g>" +
     '<g class="cotton">' + COTTON_MARKUP + "</g>";
 
@@ -78,11 +80,11 @@
   // a rounded crown, most leaves dropped, and white cotton bursting along the branches.
   const FORK = [258, 612];
   const SEG = {
-    A:   { s: FORK, c: [205, 575], e: [140, 490], w: 11 },
-    A1:  { s: "A",  c: [100, 470], e: [68, 410],  w: 6 },
-    A2:  { s: "A",  c: [130, 430], e: [112, 370], w: 6 },
-    A2a: { s: "A2", c: [95, 330],  e: [82, 288],  w: 4 },
-    A2b: { s: "A2", c: [130, 330], e: [148, 300], w: 4 },
+    A:   { s: [252, 668], c: [200, 640], e: [130, 560], w: 11 },
+    A1:  { s: "A",  c: [90, 540],  e: [58, 480],  w: 6 },
+    A2:  { s: "A",  c: [120, 500], e: [104, 430], w: 6 },
+    A2a: { s: "A2", c: [86, 390],  e: [76, 345],  w: 4 },
+    A2b: { s: "A2", c: [124, 392], e: [146, 360], w: 4 },
     B:   { s: FORK, c: [232, 520], e: [205, 410], w: 10 },
     B1:  { s: "B",  c: [185, 340], e: [150, 262], w: 5 },
     B1a: { s: "B1", c: [135, 235], e: [118, 205], w: 3.5 },
@@ -95,18 +97,24 @@
     D:   { s: FORK, c: [300, 520], e: [318, 420], w: 10 },
     D1:  { s: "D",  c: [345, 360], e: [372, 300], w: 5 },
     D1a: { s: "D1", c: [390, 260], e: [410, 222], w: 3.5 },
-    E:   { s: FORK, c: [320, 575], e: [385, 492], w: 11 },
-    E1:  { s: "E",  c: [425, 470], e: [455, 412], w: 6 },
-    E2:  { s: "E",  c: [395, 430], e: [415, 372], w: 6 },
-    E2a: { s: "E2", c: [440, 335], e: [452, 292], w: 4 },
+    E:   { s: [266, 656], c: [330, 630], e: [395, 555], w: 11 },
+    E1:  { s: "E",  c: [438, 530], e: [466, 470], w: 6 },
+    E2:  { s: "E",  c: [405, 495], e: [420, 430], w: 6 },
+    E2a: { s: "E2", c: [445, 390], e: [456, 350], w: 4 },
   };
   const parents = new Set();
   Object.keys(SEG).forEach((k) => {
     const b = SEG[k];
     if (typeof b.s === "string") {
       parents.add(b.s);
+      b.parent = b.s;
       b.s = SEG[b.s].e;
     }
+  });
+  // width where each branch ends = width of its thickest child (or a thin tip)
+  Object.keys(SEG).forEach((k) => {
+    const kids = Object.values(SEG).filter((b) => b.parent === k);
+    SEG[k].wEnd = kids.length ? Math.max(...kids.map((b) => b.w)) * 1.05 : SEG[k].w * 0.38;
   });
 
   svg.innerHTML =
@@ -114,6 +122,10 @@
     '<radialGradient id="gBoll" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#e2c194"/><stop offset=".55" stop-color="#b0804f"/><stop offset="1" stop-color="#77502f"/></radialGradient>' +
     '<radialGradient id="gCotton" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#ffffff"/><stop offset=".7" stop-color="#fbf8f2"/><stop offset="1" stop-color="#e2d9c9"/></radialGradient>' +
     '<radialGradient id="gSun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffcf8f" stop-opacity=".55"/><stop offset=".5" stop-color="#f0a46a" stop-opacity=".22"/><stop offset="1" stop-color="#e8955e" stop-opacity="0"/></radialGradient>' +
+    '<radialGradient id="gLight" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fffbe8"/><stop offset=".3" stop-color="#ffd78a" stop-opacity=".95"/><stop offset="1" stop-color="#ffb35c" stop-opacity="0"/></radialGradient>' +
+    '<radialGradient id="gGroundFade" gradientUnits="userSpaceOnUse" cx="260" cy="826" r="280" gradientTransform="translate(260 826) scale(1 .32) translate(-260 -826)"><stop offset=".42" stop-color="#fff"/><stop offset="1" stop-color="#000"/></radialGradient>' +
+    '<mask id="mGround" maskUnits="userSpaceOnUse" x="-20" y="700" width="560" height="240"><rect x="-20" y="700" width="560" height="240" fill="url(#gGroundFade)"/></mask>' +
+    '<mask id="mMoon"><rect x="380" y="0" width="140" height="180" fill="#fff"/><circle cx="469" cy="70" r="20" fill="#000"/></mask>' +
     '<radialGradient id="gHalo" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffd9a0" stop-opacity=".75"/><stop offset=".55" stop-color="#ffc47e" stop-opacity=".25"/><stop offset="1" stop-color="#ffc47e" stop-opacity="0"/></radialGradient>' +
     '<linearGradient id="gSnow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffaf3"/><stop offset="1" stop-color="#e9dccb"/></linearGradient>' +
     '<linearGradient id="gBark" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4b3223"/><stop offset=".45" stop-color="#8d6243"/><stop offset="1" stop-color="#55392a"/></linearGradient>' +
@@ -125,30 +137,56 @@
   if (hintIcon) hintIcon.innerHTML = CAPSULE_MARKUP;
 
   const L = {};
-  ["back", "trunk", "branches", "leaves", "decor", "bolls"].forEach((n) => (L[n] = mk("g", { class: "layer-" + n }, svg)));
+  ["back", "trunk", "branches", "leaves", "lights", "decor", "bolls"].forEach((n) => (L[n] = mk("g", { class: "layer-" + n }, svg)));
 
   // background glow + snowy ground
   mk("circle", { cx: 260, cy: 400, r: 340, fill: "url(#gSun)" }, L.back);
-  mk("path", { d: "M-20 846 Q 120 800 260 806 Q 400 800 540 846 L 540 880 L -20 880 Z", fill: "url(#gSnow)" }, L.back);
-  mk("path", { d: "M60 838 Q 160 822 230 830 Q 170 842 60 838 Z M300 832 Q 380 820 470 840 Q 380 842 300 832 Z", fill: "#d9c6b0", opacity: ".55" }, L.back);
+  mk("circle", { cx: 260, cy: 380, r: 330, fill: "url(#gSun)", class: "cele-glow" }, L.back);
+  // a warm crescent moon
+  mk("circle", { cx: 458, cy: 78, r: 48, fill: "url(#gHalo)", opacity: ".55" }, L.back);
+  mk("circle", { cx: 458, cy: 78, r: 21, fill: "#fff1d0", mask: "url(#mMoon)" }, L.back);
+  // snowy ground with distant hills, fading softly at the edges (no hard box)
+  const ground = mk("g", { mask: "url(#mGround)" }, L.back);
+  mk("path", { d: "M-20 812 Q 70 752 170 784 Q 250 806 330 774 Q 430 736 540 792 L 540 930 L -20 930 Z", fill: "#3b2a3e" }, ground);
+  mk("path", { d: "M-20 812 Q 70 752 170 784 Q 250 806 330 774 Q 430 736 540 792", fill: "none", stroke: "#f3e6d6", "stroke-width": "2.5", opacity: ".35" }, ground);
+  mk("path", { d: "M-20 830 Q 110 792 220 812 Q 340 830 430 804 Q 500 790 540 806 L 540 930 L -20 930 Z", fill: "#4a3343" }, ground);
+  mk("path", { d: "M-20 846 Q 120 800 260 806 Q 400 800 540 846 L 540 930 L -20 930 Z", fill: "url(#gSnow)" }, ground);
+  mk("path", { d: "M60 838 Q 160 822 230 830 Q 170 842 60 838 Z M300 832 Q 380 820 470 840 Q 380 842 300 832 Z", fill: "#d9c6b0", opacity: ".55" }, ground);
 
   // trunk (filled, tapered, with root flare) — the snow mound covers its base
+  mk("ellipse", { cx: 262, cy: 850, rx: 120, ry: 9, fill: "#b49b86", opacity: ".45" }, L.trunk);
   mk("path", {
     d: "M222 860 Q 242 846 245 806 C 247 730 248 668 249 612 L 268 612 C 269 668 271 730 273 806 Q 276 846 298 860 Z",
     fill: "url(#gBark)",
   }, L.trunk);
   mk("path", { d: "M253 826 C 255 760 253 700 256 640 M264 808 C 262 750 265 694 262 652", class: "bark" }, L.trunk);
+  mk("path", { d: "M257 830 C 258 760 256 690 258 618", class: "bark-light" }, L.trunk);
+  mk("ellipse", { cx: 261, cy: 712, rx: 3.2, ry: 5, class: "knot" }, L.trunk);
   mk("path", { d: "M216 852 Q 260 836 304 852 Q 260 846 216 852 Z", fill: "#fffaf3", opacity: ".95" }, L.trunk);
 
   // branches with taper + snow resting on top
   const segD = (b) => "M" + pt(b.s) + " Q" + pt(b.c) + " " + pt(b.e);
+  // a filled outline that narrows smoothly from w0 to w1 along the curve
+  function taperD(b, w0, w1) {
+    const N = 16, left = [], right = [];
+    for (let i = 0; i <= N; i++) {
+      const t = i / N;
+      const p = qPoint(b, t);
+      const u = qTan(b, t);
+      const hw = (w0 + (w1 - w0) * t) / 2;
+      left.push([p[0] - u[1] * hw, p[1] + u[0] * hw]);
+      right.push([p[0] + u[1] * hw, p[1] - u[0] * hw]);
+    }
+    return "M" + left.map(pt).join(" L") + " L" + right.reverse().map(pt).join(" L") + " Z";
+  }
   Object.values(SEG).forEach((b) => {
     const d = segD(b);
-    mk("path", { d, class: "stem", "stroke-width": (b.w * 0.62).toFixed(1) }, L.branches);
-    mk("path", { d, class: "stem", "stroke-width": b.w, pathLength: 100, "stroke-dasharray": "55 200" }, L.branches);
-    if (b.w >= 5) {
-      mk("path", { d, class: "snowcap", "stroke-width": Math.min(4.5, b.w * 0.55).toFixed(1), transform: "translate(0 -" + (b.w * 0.45).toFixed(1) + ")", pathLength: 100, "stroke-dasharray": "0 18 55 200" }, L.branches);
-    }
+    const w0 = b.parent ? b.w : b.w * 1.15;
+    mk("path", { d: taperD(b, w0, b.wEnd), class: "limb" }, L.branches);
+    mk("circle", { cx: b.s[0], cy: b.s[1], r: (w0 / 2).toFixed(1), class: "limb" }, L.branches);
+    mk("circle", { cx: b.e[0], cy: b.e[1], r: (b.wEnd / 2).toFixed(1), class: "limb" }, L.branches);
+    // soft highlight on the lit (upper-left) side
+    mk("path", { d, class: "limb-light", "stroke-width": (b.w * 0.22).toFixed(1), transform: "translate(" + (-b.w * 0.16).toFixed(1) + " " + (-b.w * 0.2).toFixed(1) + ")", pathLength: 100, "stroke-dasharray": "72 200" }, L.branches);
   });
 
   // seeded random so the plant looks the same on every visit
@@ -173,11 +211,11 @@
   const R_BOLL = 36;  // clickable boll footprint (radius, viewBox units)
   const placed = [];
   const fits = (c, r) =>
-    c[0] - r > 6 && c[0] + r < 514 && c[1] - r > 60 && c[1] + r < 640 &&
+    c[0] - r > 6 && c[0] + r < 514 && c[1] - r > 60 && c[1] + r < 690 &&
     placed.every((p) => Math.hypot(p.c[0] - c[0], p.c[1] - c[1]) >= (p.r + r) * 0.82);
 
   const clampTilt = (v, m) => Math.max(-m, Math.min(m, v));
-  const inBounds = (c, r) => c[0] - r > 6 && c[0] + r < 514 && c[1] - r > 60 && c[1] + r < 640;
+  const inBounds = (c, r) => c[0] - r > 6 && c[0] + r < 514 && c[1] - r > 60 && c[1] + r < 690;
 
   // 1) candidate spots: every branch tip + spurs along every branch
   const cands = [];
@@ -226,7 +264,8 @@
   function decorCotton(c, sc, rot, from) {
     if (from) mk("line", { x1: from[0].toFixed(1), y1: from[1].toFixed(1), x2: c[0].toFixed(1), y2: c[1].toFixed(1), class: "stalk thin" }, L.branches);
     const g = mk("g", { class: "decor-cotton", transform: "translate(" + pt(c) + ") rotate(" + rot.toFixed(1) + ") scale(" + sc.toFixed(2) + ")" }, L.decor);
-    g.innerHTML = COTTON_MARKUP;
+    const cj = mk("g", { class: "cj", "data-y": c[1].toFixed(0) }, g);
+    cj.innerHTML = rnd() < 0.45 ? COTTON_MARKUP_4 : COTTON_MARKUP;
   }
   cands.forEach((s) => {
     if (s.used) return;
@@ -247,6 +286,7 @@
   slots.forEach((s, i) => {
     if (s.a) mk("line", { x1: s.a[0].toFixed(1), y1: s.a[1].toFixed(1), x2: s.c[0].toFixed(1), y2: s.c[1].toFixed(1), class: "stalk" }, L.branches);
     const outer = mk("g", { transform: "translate(" + pt(s.c) + ") rotate(" + s.tilt.toFixed(1) + ")" }, L.bolls);
+    const cj = mk("g", { class: "cj", "data-y": s.c[1].toFixed(0) }, outer);
     const g = mk("g", {
       class: "boll",
       tabindex: "0",
@@ -254,7 +294,7 @@
       "aria-label": (i + 1) + "번째 목화 열기",
       "data-i": i,
       style: "--sway-delay:" + (-Math.random() * 4).toFixed(2) + "s;--sway-dur:" + (4 + Math.random() * 1.5).toFixed(2) + "s",
-    }, outer);
+    }, cj);
     g.innerHTML = BOLL_MARKUP;
     bolls.push(g);
   });
@@ -382,8 +422,87 @@
 
   function maybeFinale() {
     if (!finaleShown && opened.size === MESSAGES.length && MESSAGES.length > 0) {
-      setTimeout(showFinale, 250);
+      celebrateThenFinale();
     }
+  }
+
+  /* ---------------- celebration when every boll has bloomed ---------------- */
+  let celebrated = false;
+  const LIGHT_COLORS = ["#ffd98f", "#ffbf73", "#fff3cf", "#ffcf9e"];
+
+  function buildLights() {
+    L.lights.textContent = "";
+    const add = (x, y) => {
+      const d = Math.max(0, (840 - y) / 760) * 1.6;           // bottom → top wave
+      const c = mk("circle", { class: "light", cx: x.toFixed(1), cy: y.toFixed(1), r: (5 + rnd() * 2.5).toFixed(1), fill: "url(#gLight)" }, L.lights);
+      c.style.setProperty("--ld", d.toFixed(2) + "s");
+      c.style.setProperty("--td", (1.6 + rnd() * 1.6).toFixed(2) + "s");
+      mk("circle", { class: "light", cx: x.toFixed(1), cy: y.toFixed(1), r: "1.6", fill: LIGHT_COLORS[Math.floor(rnd() * LIGHT_COLORS.length)] }, L.lights)
+        .style.setProperty("--ld", d.toFixed(2) + "s");
+    };
+    // spiral of lights around the trunk
+    for (let y = 800, k = 0; y > 620; y -= 22, k++) add(k % 2 ? 268 : 249, y);
+    // lights strung along every branch
+    Object.values(SEG).forEach((b) => {
+      const len = Math.hypot(b.e[0] - b.s[0], b.e[1] - b.s[1]);
+      const n = Math.max(1, Math.round(len / 26));
+      for (let i = 1; i <= n; i++) {
+        const t = i / (n + 0.5);
+        const p = qPoint(b, t);
+        const u = qTan(b, t);
+        const side = i % 2 ? 1 : -1;
+        add(p[0] + u[1] * 5 * side, p[1] - u[0] * 5 * side);
+      }
+    });
+  }
+
+  function fountain() {
+    if (reduceMotion) return;
+    const cottons = [...document.querySelectorAll(".decor-cotton, .boll.open")];
+    cottons.forEach((el, i) => {
+      if (i % 2) return;
+      const r = el.getBoundingClientRect();
+      const delay = 400 + Math.random() * 1400;
+      setTimeout(() => {
+        for (let k = 0; k < 2; k++) {
+          const f = document.createElement("div");
+          f.className = "fluff";
+          const size = 5 + Math.random() * 9;
+          Object.assign(f.style, { left: r.left + r.width / 2 - size / 2 + "px", top: r.top + r.height / 2 - size / 2 + "px", width: size + "px", height: size + "px" });
+          document.body.appendChild(f);
+          const dx = (Math.random() - 0.5) * 120;
+          const dy = -(140 + Math.random() * 220);
+          f.animate(
+            [
+              { transform: "translate(0,0) scale(.3)", opacity: 0 },
+              { transform: "translate(" + dx * 0.3 + "px," + dy * 0.3 + "px) scale(1)", opacity: 1, offset: 0.25 },
+              { transform: "translate(" + dx + "px," + dy + "px) scale(.7)", opacity: 0 },
+            ],
+            { duration: 2200 + Math.random() * 1200, easing: "cubic-bezier(.2,.6,.3,1)" }
+          ).onfinish = () => f.remove();
+        }
+      }, delay);
+    });
+  }
+
+  function celebrate() {
+    buildLights();
+    document.querySelectorAll(".cj").forEach((el) => {
+      const y = +el.dataset.y || 400;
+      el.style.setProperty("--jd", (Math.max(0, (640 - y) / 560) * 1.2).toFixed(2) + "s");
+    });
+    svg.classList.remove("celebrate");
+    void svg.getBoundingClientRect(); // restart animations
+    svg.classList.add("celebrate");
+    fountain();
+  }
+
+  function celebrateThenFinale() {
+    if (celebrated) return setTimeout(showFinale, 150);
+    celebrated = true;
+    svg.scrollIntoView({ block: "center", behavior: reduceMotion ? "auto" : "smooth" });
+    setTimeout(celebrate, reduceMotion ? 0 : 450);
+    setTimeout(showFinale, reduceMotion ? 300 : 4200);
   }
 
   nextBtn.addEventListener("click", () => {
@@ -394,7 +513,7 @@
         setTimeout(() => openBoll(next), reduceMotion ? 0 : 350);
       });
     } else if (!finaleShown) {
-      closeModal(() => setTimeout(showFinale, 150));
+      closeModal(celebrateThenFinale);
     } else {
       closeModal(showAll);
     }
@@ -470,6 +589,9 @@
     });
     opened.clear();
     finaleShown = false;
+    celebrated = false;
+    svg.classList.remove("celebrate");
+    L.lights.textContent = "";
     $("allMessages").hidden = true;
     updateProgress();
     window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });

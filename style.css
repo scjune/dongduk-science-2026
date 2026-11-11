@@ -153,6 +153,37 @@ main { position: relative; z-index: 1; }
 .stalk { stroke: #8d6142; stroke-width: 3.5; stroke-linecap: round; }
 .stalk.thin { stroke-width: 2.2; }
 .bark { fill: none; stroke: rgba(40, 24, 14, .45); stroke-width: 1.6; stroke-linecap: round; }
+.bark-light { fill: none; stroke: #c4946a; stroke-width: 3; stroke-linecap: round; opacity: .35; }
+.knot { fill: #4b3223; opacity: .7; }
+.limb { fill: #855a3c; }
+.limb-light { fill: none; stroke: #c4946a; stroke-linecap: round; opacity: .5; }
+
+/* ---------- celebration (all bolls bloomed) ---------- */
+.cele-glow { opacity: 0; transition: opacity 2.5s ease; }
+#plant.celebrate .cele-glow { opacity: 1; }
+
+.cj { transform-box: fill-box; transform-origin: 50% 60%; }
+#plant.celebrate .cj { animation: hop .75s cubic-bezier(.34, 1.56, .64, 1) var(--jd, 0s) both; }
+@keyframes hop {
+  0% { scale: 1; }
+  35% { scale: 1.28; }
+  100% { scale: 1; }
+}
+
+.light { opacity: 0; transform-box: fill-box; transform-origin: center; pointer-events: none; }
+#plant.celebrate .light {
+  animation:
+    light-on .5s ease-out var(--ld, 0s) forwards,
+    twinkle var(--td, 2.2s) ease-in-out calc(var(--ld, 0s) + .5s) infinite;
+}
+@keyframes light-on {
+  from { opacity: 0; scale: .2; }
+  to { opacity: 1; scale: 1; }
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .35; }
+}
 
 /* clickable (still closed) bolls glow softly */
 .halo {
@@ -175,11 +206,9 @@ main { position: relative; z-index: 1; }
 .flower-eye { fill: #b24f6a; }
 .flower-pistil { fill: #f1cf5e; }
 
-.bract { fill: #7b9a48; stroke: #556f2f; stroke-width: 1; stroke-linejoin: round; }
 .pod { fill: url(#gBoll); stroke: #5c3b22; stroke-width: 1.2; }
-.cracks path { fill: none; stroke: #fffaf2; stroke-width: 2.6; stroke-linecap: round; }
-.cracks .peek { fill: url(#gCotton); stroke: none; }
-.seam { fill: none; stroke: #56702f; stroke-width: 1; opacity: .55; }
+.tuft circle { fill: url(#gCotton); }
+.seam { fill: none; stroke: #5c3b22; stroke-width: 1.2; opacity: .55; }
 .shine { fill: #fff; opacity: .35; }
 .calyx { fill: #8a5b37; stroke: #5c3b22; stroke-width: 1.2; stroke-linejoin: round; }
 .puff { fill: url(#gCotton); }
@@ -509,6 +538,7 @@ main { padding-bottom: 32px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .boll, .drift, .halo { animation: none !important; }
+  .boll, .drift, .halo, .cj { animation: none !important; }
+  #plant.celebrate .light { animation: none !important; opacity: 1; }
   .drift-layer { display: none; }
 }
