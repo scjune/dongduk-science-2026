@@ -511,7 +511,7 @@ main { padding-bottom: 32px; }
   text-decoration: underline;
   cursor: pointer;
 }
-.save-sheet-ext[hidden] { display: none; }
+.save-sheet-ext[hidden], .save-sheet-actions .btn[hidden] { display: none; }
 .card-actions {
   display: flex;
   flex-wrap: wrap;

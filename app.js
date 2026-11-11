@@ -682,6 +682,8 @@
   // images made on the fly, so they get the ready-made card file from cards/NN.png instead
   const IN_APP = IN_KAKAO || /Instagram|NAVER|FBAN|FBAV|Line\/|; wv\)/i.test(UA);
   const IS_PHONE = window.matchMedia("(pointer: coarse)").matches;
+  const IS_IOS = /iPhone|iPad|iPod/i.test(UA) || (/Macintosh/i.test(UA) && navigator.maxTouchPoints > 1);
+  const IS_ANDROID = /Android/i.test(UA);
   const cardPath = (i) => "cards/" + String(i + 1).padStart(2, "0") + ".jpg";
 
   // sheet showing the finished card: long-press the picture, or use the download button
@@ -694,7 +696,7 @@
     '<p class="save-sheet-tip"></p>' +
     '<div class="save-sheet-actions">' +
     '<button type="button" class="btn ghost" data-act="close">닫기</button>' +
-    '<a class="btn primary" data-act="download">이미지 다운로드</a>' +
+    '<a class="btn primary" data-act="download">이미지 저장</a>' +
     "</div>" +
     '<button type="button" class="save-sheet-ext" data-act="external">저장이 안 되면 다른 브라우저로 열기</button>' +
     "</div>";
@@ -708,16 +710,33 @@
     sheetImg.src = src;
     sheetDl.href = src;
     sheetDl.setAttribute("download", name);
-    sheetTip.innerHTML = "<b>이미지를 길게 눌러 ‘이미지 저장’</b>을 누르거나,<br>아래 <b>이미지 다운로드</b> 버튼을 눌러 주세요.";
+    if (IS_IOS) {
+      // on iPhone a download goes to the Files app, so long-press → Photos is the way
+      sheetTip.innerHTML = "<b>이미지를 길게 눌러 ‘사진 앱에 저장’</b>을 누르면<br>사진첩에 바로 저장돼요.";
+      sheetDl.hidden = true;
+    } else {
+      sheetTip.innerHTML = "<b>이미지 저장</b> 버튼을 누르거나,<br>이미지를 길게 눌러 ‘이미지 저장’을 눌러 주세요.";
+      sheetDl.hidden = false;
+    }
     sheetExt.hidden = !IN_APP;
     sheet.hidden = false;
+  }
+  function directDownload(i) {
+    const a = document.createElement("a");
+    a.href = cardPath(i);
+    a.download = "eungwon-" + String(i + 1).padStart(2, "0") + ".jpg";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
   sheet.addEventListener("click", (e) => {
     const act = e.target.closest("[data-act]");
     if (e.target === sheet || (act && act.dataset.act === "close")) {
       sheet.hidden = true;
     } else if (act && act.dataset.act === "external") {
-      if (IN_KAKAO) location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href);
+      // reopen this page in the phone's own browser, already showing this card
+      const target = location.origin + location.pathname + "?save=" + String(+sheetImg.dataset.i + 1).padStart(2, "0");
+      if (IN_KAKAO) location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(target);
       else sheetTip.innerHTML = "오른쪽 위 메뉴(⋮ 또는 ···)에서 <b>‘다른 브라우저로 열기’</b>를 눌러 주세요.";
     }
   });
@@ -748,50 +767,29 @@
   }
 
   // shared by the message popup and every card in "메시지 모아 보기"
-  async function saveCard(i, btn) {
-    // in-app browsers (KakaoTalk etc.): just show the card picture — nothing that can fail
-    if (IN_APP) return showCardSheet(i);
+  function saveCard(i, btn) {
+    // in-app browsers (KakaoTalk etc.) and iPhone: show the card picture to long-press / save
+    if (IN_APP || IS_IOS || (IS_PHONE && !IS_ANDROID)) return showCardSheet(i);
 
+    // Android browsers and computers: save the file straight away (no share sheet)
+    directDownload(i);
     const label = btn.querySelector("span");
     const original = label.textContent;
-    btn.disabled = true;
-    label.textContent = "카드를 준비하는 중…";
-    try {
-      if (IS_PHONE) {
-        // phone browsers: try the share sheet ("이미지 저장" → photo album); otherwise the card sheet
-        let shared = false;
-        try {
-          if (navigator.share && navigator.canShare && typeof File === "function") {
-            const r = await fetch(cardPath(i));
-            if (r.ok) {
-              const file = new File([await r.blob()], "eungwon-" + String(i + 1).padStart(2, "0") + ".jpg", { type: "image/jpeg" });
-              if (navigator.canShare({ files: [file] })) {
-                await navigator.share({ files: [file], title: "응원 한 송이" });
-                shared = true;
-              }
-            }
-          }
-        } catch (err) {
-          if (err && err.name === "AbortError") shared = true; // the student closed the share sheet
-        }
-        if (!shared) showCardSheet(i);
-      } else {
-        // computers: download the file
-        const a = document.createElement("a");
-        a.href = cardPath(i);
-        a.download = "eungwon-" + String(i + 1).padStart(2, "0") + ".jpg";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      }
-      label.textContent = original;
-    } catch (err) {
-      console.error(err);
-      showCardSheet(i);
-      label.textContent = original;
-    }
-    btn.disabled = false;
+    label.textContent = IS_ANDROID ? "저장했어요 · 갤러리/다운로드 폴더" : "저장했어요";
+    setTimeout(() => (label.textContent = original), 2200);
   }
+
+  // opened from KakaoTalk via "다른 브라우저로 열기": go straight to that card
+  (function handleSaveLink() {
+    const n = parseInt(new URLSearchParams(location.search).get("save"), 10);
+    if (!(n >= 1 && n <= MESSAGES.length)) return;
+    history.replaceState(null, "", location.pathname);
+    const i = n - 1;
+    setTimeout(() => {
+      showCardSheet(i);
+      if (!IN_APP && !IS_IOS) directDownload(i);
+    }, 600);
+  })();
 
   /* ---------------- boll interaction ---------------- */
   function openBoll(el) {
