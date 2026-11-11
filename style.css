@@ -319,10 +319,10 @@ main { padding-bottom: 32px; }
 .credit {
   margin: -12px 0 24px;
   text-align: center;
-  font-size: .8rem;
+  font-size: .85rem;
   letter-spacing: .06em;
-  color: var(--page-muted);
-  opacity: .8;
+  color: var(--page-ink);
+  opacity: .85;
 }
 
 /* ---------- modal ---------- */
