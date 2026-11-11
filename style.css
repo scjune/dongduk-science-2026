@@ -89,7 +89,22 @@ h1 {
   color: var(--page-muted);
   font-size: clamp(.95rem, 2.6vw, 1.05rem);
 }
-.lead strong { color: var(--page-ink); font-weight: 400; }
+.lead .hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--page-ink);
+  font-weight: 400;
+}
+.hint-icon {
+  flex: none;
+  width: 24px;
+  height: 27px;
+  overflow: visible;
+  filter: drop-shadow(0 0 6px rgba(255, 200, 130, .85));
+}
 .progress {
   display: inline-flex;
   align-items: center;
@@ -161,7 +176,9 @@ main { position: relative; z-index: 1; }
 .flower-pistil { fill: #f1cf5e; }
 
 .bract { fill: #7b9a48; stroke: #556f2f; stroke-width: 1; stroke-linejoin: round; }
-.pod { fill: url(#gBoll); stroke: #56702f; stroke-width: 1.2; }
+.pod { fill: url(#gBoll); stroke: #5c3b22; stroke-width: 1.2; }
+.cracks path { fill: none; stroke: #fffaf2; stroke-width: 2.6; stroke-linecap: round; }
+.cracks .peek { fill: url(#gCotton); stroke: none; }
 .seam { fill: none; stroke: #56702f; stroke-width: 1; opacity: .55; }
 .shine { fill: #fff; opacity: .35; }
 .calyx { fill: #8a5b37; stroke: #5c3b22; stroke-width: 1.2; stroke-linejoin: round; }

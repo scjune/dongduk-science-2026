@@ -54,19 +54,23 @@
     PUFFS.map((p) => '<circle class="puff" cx="' + p[0] + '" cy="' + p[1] + '" r="' + p[2] + '"/>').join("") +
     "</g>";
 
-  const BRACT_D = "M-3 22 C -18 26 -34 14 -33 -4 L -27 1 L -29 -11 L -21 -4 L -20 -16 L -13 -3 C -10 8 -6 16 -3 22 Z";
+  // a ripe boll just before it bursts: dried brown sepals, a tan pod
+  // cracking along its seams with white cotton peeking through
+  const CAPSULE_MARKUP =
+    '<path class="calyx" d="' + star(5, 34, 13, -54, 12) + '"/>' +
+    '<path class="pod" d="M0 -30 C 15 -28 21 -6 19 8 C 17 22 8 27 0 27 C -8 27 -17 22 -19 8 C -21 -6 -15 -28 0 -30 Z"/>' +
+    '<g class="cracks" filter="url(#fuzz)">' +
+    '<path d="M0 -28 Q 4 -2 0 24"/>' +
+    '<path d="M-3 -27 Q -14 -2 -11 18"/>' +
+    '<path d="M3 -27 Q 14 -2 11 18"/>' +
+    '<path class="peek" d="M-7 -26 Q 0 -40 7 -26 Q 0 -22 -7 -26 Z"/>' +
+    "</g>" +
+    '<ellipse class="shine" cx="-8" cy="-10" rx="3.5" ry="7"/>';
+  const BRACT_D ="M-3 22 C -18 26 -34 14 -33 -4 L -27 1 L -29 -11 L -21 -4 L -20 -16 L -13 -3 C -10 8 -6 16 -3 22 Z";
   const BOLL_MARKUP =
     '<circle class="hit" r="46"/>' +
     '<circle class="halo" r="44" fill="url(#gHalo)"/>' +
-    '<g class="capsule">' +
-    '<path class="bract" d="' + BRACT_D + '"/>' +
-    '<path class="bract" transform="scale(-1 1)" d="' + BRACT_D + '"/>' +
-    '<path class="pod" d="M0 -32 C 16 -30 22 -6 20 8 C 18 22 8 28 0 28 C -8 28 -18 22 -20 8 C -22 -6 -16 -30 0 -32 Z"/>' +
-    '<path class="seam" d="M0 -30 Q 5 0 0 26"/>' +
-    '<path class="seam" d="M-2 -30 Q -14 -2 -12 20"/>' +
-    '<path class="seam" d="M2 -30 Q 14 -2 12 20"/>' +
-    '<ellipse class="shine" cx="-8" cy="-12" rx="4" ry="8"/>' +
-    "</g>" +
+    '<g class="capsule">' + CAPSULE_MARKUP + "</g>" +
     '<g class="cotton">' + COTTON_MARKUP + "</g>";
 
   /* ---------------- plant geometry (portrait, mobile-first) ---------------- */
@@ -107,7 +111,7 @@
 
   svg.innerHTML =
     "<defs>" +
-    '<radialGradient id="gBoll" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#c6d18a"/><stop offset=".55" stop-color="#8ba455"/><stop offset="1" stop-color="#5f7b37"/></radialGradient>' +
+    '<radialGradient id="gBoll" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#e2c194"/><stop offset=".55" stop-color="#b0804f"/><stop offset="1" stop-color="#77502f"/></radialGradient>' +
     '<radialGradient id="gCotton" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#ffffff"/><stop offset=".7" stop-color="#fbf8f2"/><stop offset="1" stop-color="#e2d9c9"/></radialGradient>' +
     '<radialGradient id="gSun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffcf8f" stop-opacity=".55"/><stop offset=".5" stop-color="#f0a46a" stop-opacity=".22"/><stop offset="1" stop-color="#e8955e" stop-opacity="0"/></radialGradient>' +
     '<radialGradient id="gHalo" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffd9a0" stop-opacity=".75"/><stop offset=".55" stop-color="#ffc47e" stop-opacity=".25"/><stop offset="1" stop-color="#ffc47e" stop-opacity="0"/></radialGradient>' +
@@ -115,6 +119,10 @@
     '<linearGradient id="gBark" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4b3223"/><stop offset=".45" stop-color="#8d6243"/><stop offset="1" stop-color="#55392a"/></linearGradient>' +
     '<filter id="fuzz" x="-30%" y="-30%" width="160%" height="160%"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G"/></filter>' +
     "</defs>";
+
+  // small icon of the closed boll inside the hint text
+  const hintIcon = document.querySelector(".hint-icon");
+  if (hintIcon) hintIcon.innerHTML = CAPSULE_MARKUP;
 
   const L = {};
   ["back", "trunk", "branches", "leaves", "decor", "bolls"].forEach((n) => (L[n] = mk("g", { class: "layer-" + n }, svg)));
