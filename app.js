@@ -1070,6 +1070,24 @@
 
   updateProgress();
 
+  /* ---------------- pause the tree when nobody can see it ---------------- */
+  // Every moving part of the tree (swaying bolls, glow, fairy lights) makes the phone redraw the
+  // whole tree each frame — even while scrolling the message list below. Freeze it when it is
+  // off screen or covered by a popup, and let it move again when it comes back into view.
+  let plantVisible = true;
+  function updatePause() {
+    svg.classList.toggle("paused", !plantVisible || !modal.hidden || !sheet.hidden);
+  }
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver((entries) => {
+      plantVisible = entries[0].isIntersecting;
+      updatePause();
+    }).observe(svg);
+  }
+  const hiddenWatcher = new MutationObserver(updatePause);
+  hiddenWatcher.observe(modal, { attributes: true, attributeFilter: ["hidden"] });
+  hiddenWatcher.observe(sheet, { attributes: true, attributeFilter: ["hidden"] });
+
   /* ---------------- drifting cotton ---------------- */
   if (!reduceMotion) {
     const layer = $("drift");

@@ -157,6 +157,9 @@ main { position: relative; z-index: 1; }
 .limb { fill: #855a3c; }
 .limb-light { fill: none; stroke: #c4946a; stroke-linecap: round; opacity: .5; }
 
+/* tree frozen while off screen or behind a popup (see updatePause in app.js) */
+#plant.paused *, #plant.paused *::before, #plant.paused *::after { animation-play-state: paused !important; }
+
 /* ---------- celebration (all bolls bloomed) ---------- */
 .cele-glow { opacity: 0; transition: opacity 2.5s ease; }
 #plant.celebrate .cele-glow { opacity: 1; }
@@ -303,10 +306,21 @@ main { position: relative; z-index: 1; }
 .card .btn.ghost, .save-sheet .btn.ghost { color: var(--ink); border-color: var(--line); }
 .btn.primary { color: #fff; background: var(--accent); border-color: var(--accent); }
 .btn.primary:hover { background: var(--accent-dark); }
-.btn.celebrate { animation: glow 1.8s ease-in-out infinite; }
-@keyframes glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 180, 122, .55); }
-  50% { box-shadow: 0 0 0 12px rgba(244, 180, 122, 0); }
+/* glowing ring drawn as a separate layer that only scales and fades (cheap for phones) */
+.btn.celebrate { position: relative; }
+.btn.celebrate::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  border: 2px solid rgba(244, 180, 122, .7);
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation: glow-ring 1.8s ease-out infinite;
+}
+@keyframes glow-ring {
+  0% { transform: scale(1); opacity: .9; }
+  100% { transform: scale(1.18, 1.45); opacity: 0; }
 }
 
 /* ---------- all messages ---------- */
@@ -330,7 +344,8 @@ main { position: relative; z-index: 1; }
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 18px;
-  box-shadow: 0 10px 24px -18px rgba(90, 60, 30, .5);
+  box-shadow: 0 6px 12px -10px rgba(90, 60, 30, .5);
+  contain: layout;
   animation: rise .5s ease both;
 }
 .note-no { font-size: .75rem; letter-spacing: .12em; color: var(--muted); }
