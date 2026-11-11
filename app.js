@@ -305,6 +305,18 @@
 
   /* ---------------- state ---------------- */
   const opened = new Set();
+  // which message hides in which boll is shuffled on every visit,
+  // and each popup is numbered by the order the student opened it (01, 02, …)
+  const shuffled = (n) => {
+    const a = [...Array(n).keys()];
+    for (let k = a.length - 1; k > 0; k--) {
+      const j = Math.floor(Math.random() * (k + 1));
+      [a[k], a[j]] = [a[j], a[k]];
+    }
+    return a;
+  };
+  let msgOf = shuffled(MESSAGES.length);   // boll index → message index
+  const openOrder = new Map();               // boll index → 1, 2, 3 … (order opened)
   let busy = false;
   let finaleShown = false;
   let lastFocus = null;
@@ -379,11 +391,13 @@
 
   let currentIndex = -1;
   function showCard(i) {
-    currentIndex = i;
+    const m = msgOf[i];               // the message hidden in this boll
+    currentIndex = m;                 // used by "카드로 저장하기"
     modal.classList.remove("finale");
     $("saveBtn").querySelector("span").textContent = "이 응원을 카드로 저장하기";
-    const text = MESSAGES[i];
-    $("cardNo").textContent = "응원 메시지 " + String(i + 1).padStart(2, "0") + " / " + String(MESSAGES.length).padStart(2, "0");
+    const text = MESSAGES[m];
+    const nth = openOrder.get(i) || opened.size;
+    $("cardNo").textContent = "응원 메시지 " + String(nth).padStart(2, "0") + " / " + String(MESSAGES.length).padStart(2, "0");
     $("cardText").textContent = text;
     $("cardText").style.setProperty("--fs", fontSizeFor(text));
     $("cardFrom").hidden = true;
@@ -521,7 +535,8 @@
 
   nextBtn.addEventListener("click", () => {
     if (opened.size < MESSAGES.length) {
-      const next = bolls.find((b) => !b.classList.contains("open"));
+      const closed = bolls.filter((b) => !b.classList.contains("open"));
+      const next = closed[Math.floor(Math.random() * closed.length)];
       closeModal(() => {
         next.scrollIntoView({ block: "center", behavior: reduceMotion ? "auto" : "smooth" });
         setTimeout(() => openBoll(next), reduceMotion ? 0 : 350);
@@ -972,8 +987,9 @@
     const finish = () => {
       el.classList.remove("shaking");
       el.classList.add("open");
-      el.setAttribute("aria-label", (i + 1) + "번째 응원 메시지 다시 보기");
       opened.add(i);
+      openOrder.set(i, opened.size);
+      el.setAttribute("aria-label", opened.size + "번째로 연 응원 메시지 다시 보기");
       updateProgress();
       burst(el);
       setTimeout(() => {
@@ -1041,6 +1057,8 @@
       b.setAttribute("aria-label", (i + 1) + "번째 목화 열기");
     });
     opened.clear();
+    openOrder.clear();
+    msgOf = shuffled(MESSAGES.length);
     finaleShown = false;
     celebrated = false;
     svg.classList.remove("celebrate");
