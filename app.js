@@ -737,12 +737,15 @@
     return { blob, src: dataUrl, isFile: false };
   }
 
-  saveBtn.addEventListener("click", async () => {
-    if (currentIndex < 0) return;
-    const i = currentIndex;
-    const label = saveBtn.querySelector("span");
+  saveBtn.addEventListener("click", () => {
+    if (currentIndex >= 0) saveCard(currentIndex, saveBtn);
+  });
+
+  // shared by the message popup and every card in "메시지 모아 보기"
+  async function saveCard(i, btn) {
+    const label = btn.querySelector("span");
     const original = label.textContent;
-    saveBtn.disabled = true;
+    btn.disabled = true;
     label.textContent = "카드를 준비하는 중…";
     try {
       const card = await getCard(i);
@@ -775,8 +778,8 @@
       label.textContent = "저장하지 못했어요. 다시 눌러 주세요";
       setTimeout(() => (label.textContent = original), 1800);
     }
-    saveBtn.disabled = false;
-  });
+    btn.disabled = false;
+  }
 
   /* ---------------- boll interaction ---------------- */
   function openBoll(el) {
@@ -824,10 +827,19 @@
       no.textContent = "NO. " + String(i + 1).padStart(2, "0");
       const p = document.createElement("p");
       p.textContent = m;
+      const foot = document.createElement("div");
+      foot.className = "note-foot";
       const from = document.createElement("span");
       from.className = "note-from";
-      from.textContent = "1학년 학부모님";
-      card.append(no, p, from);
+      from.textContent = "부모님";
+      const save = saveBtn.cloneNode(true);
+      save.removeAttribute("id");
+      save.classList.add("small");
+      save.querySelector("span").textContent = "카드로 저장";
+      save.setAttribute("aria-label", "응원 메시지 " + (i + 1) + " 카드로 저장");
+      save.addEventListener("click", () => saveCard(i, save));
+      foot.append(from, save);
+      card.append(no, p, foot);
       grid.appendChild(card);
     });
   }

@@ -456,6 +456,14 @@ main { padding-bottom: 32px; }
 .save-link[disabled] { opacity: .6; cursor: progress; }
 .save-link svg { width: 16px; height: 16px; }
 .modal.finale .save-link { display: none; }
+.note-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.save-link.small {
+  margin: 0 -8px 0 0;
+  padding: 6px 10px;
+  font-size: .82rem;
+  background: #f6ece0;
+}
+.save-link.small:hover { background: #efe0cf; }
 
 /* sheet showing the finished card (long-press to save) */
 .save-sheet {
