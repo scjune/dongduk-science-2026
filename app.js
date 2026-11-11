@@ -723,60 +723,72 @@
   });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !sheet.hidden) sheet.hidden = true; });
 
-  async function getCard(i) {
-    // prefer the ready-made file (a real web address works in every app);
-    // fall back to drawing it here if that file doesn't exist yet
-    try {
-      const r = await fetch(cardPath(i), { cache: "force-cache" });
-      if (r.ok) {
-        const blob = await r.blob();
-        return { blob, src: cardPath(i), isFile: true };
-      }
-    } catch (_) { /* fall through */ }
-    const { blob, dataUrl } = await makeCardBlob(MESSAGES[i]);
-    return { blob, src: dataUrl, isFile: false };
-  }
-
   saveBtn.addEventListener("click", () => {
     if (currentIndex >= 0) saveCard(currentIndex, saveBtn);
   });
 
+  // if the ready-made card file can't be loaded, draw the card here instead
+  sheetImg.addEventListener("error", async () => {
+    const i = +sheetImg.dataset.i;
+    if (sheetImg.dataset.fallback === "1" || isNaN(i)) return;
+    sheetImg.dataset.fallback = "1";
+    try {
+      const { dataUrl } = await makeCardBlob(MESSAGES[i]);
+      sheetImg.src = dataUrl;
+      sheetDl.href = dataUrl;
+    } catch (err) {
+      console.error(err);
+    }
+  });
+
+  function showCardSheet(i) {
+    sheetImg.dataset.i = i;
+    sheetImg.dataset.fallback = "0";
+    openSheet(cardPath(i), "eungwon-" + String(i + 1).padStart(2, "0") + ".jpg");
+  }
+
   // shared by the message popup and every card in "메시지 모아 보기"
   async function saveCard(i, btn) {
+    // in-app browsers (KakaoTalk etc.): just show the card picture — nothing that can fail
+    if (IN_APP) return showCardSheet(i);
+
     const label = btn.querySelector("span");
     const original = label.textContent;
     btn.disabled = true;
     label.textContent = "카드를 준비하는 중…";
     try {
-      const card = await getCard(i);
-      const name = "eungwon-" + String(i + 1).padStart(2, "0") + (card.isFile ? ".jpg" : ".png");
-      const file = new File([card.blob], name, { type: card.blob.type || "image/png" });
-      if (IN_APP || IS_PHONE) {
-        if (!IN_APP && navigator.canShare && navigator.canShare({ files: [file] })) {
-          // phone browsers: share sheet → "이미지 저장" puts it in the photo album
-          try {
-            await navigator.share({ files: [file], title: "응원 한 송이" });
-          } catch (err) {
-            if (err && err.name !== "AbortError") openSheet(card.src, name);
+      if (IS_PHONE) {
+        // phone browsers: try the share sheet ("이미지 저장" → photo album); otherwise the card sheet
+        let shared = false;
+        try {
+          if (navigator.share && navigator.canShare && typeof File === "function") {
+            const r = await fetch(cardPath(i));
+            if (r.ok) {
+              const file = new File([await r.blob()], "eungwon-" + String(i + 1).padStart(2, "0") + ".jpg", { type: "image/jpeg" });
+              if (navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title: "응원 한 송이" });
+                shared = true;
+              }
+            }
           }
-        } else {
-          openSheet(card.src, name);
+        } catch (err) {
+          if (err && err.name === "AbortError") shared = true; // the student closed the share sheet
         }
+        if (!shared) showCardSheet(i);
       } else {
-        const url = card.isFile ? card.src : URL.createObjectURL(file);
+        // computers: download the file
         const a = document.createElement("a");
-        a.href = url;
-        a.download = name;
+        a.href = cardPath(i);
+        a.download = "eungwon-" + String(i + 1).padStart(2, "0") + ".jpg";
         document.body.appendChild(a);
         a.click();
         a.remove();
-        if (!card.isFile) setTimeout(() => URL.revokeObjectURL(url), 4000);
       }
       label.textContent = original;
     } catch (err) {
       console.error(err);
-      label.textContent = "저장하지 못했어요. 다시 눌러 주세요";
-      setTimeout(() => (label.textContent = original), 1800);
+      showCardSheet(i);
+      label.textContent = original;
     }
     btn.disabled = false;
   }
