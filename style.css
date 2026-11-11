@@ -455,7 +455,7 @@ main { padding-bottom: 32px; }
 .save-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .save-link[disabled] { opacity: .6; cursor: progress; }
 .save-link svg { width: 16px; height: 16px; }
-.modal.finale .save-link { display: none; }
+.modal.finale .save-link { margin-top: 4px; }
 .note-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .save-link.small {
   margin: 0 -8px 0 0;

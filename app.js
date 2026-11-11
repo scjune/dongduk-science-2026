@@ -377,6 +377,7 @@
   function showCard(i) {
     currentIndex = i;
     modal.classList.remove("finale");
+    $("saveBtn").querySelector("span").textContent = "이 응원을 카드로 저장하기";
     const text = MESSAGES[i];
     $("cardNo").textContent = "응원 메시지 " + String(i + 1).padStart(2, "0") + " / " + String(MESSAGES.length).padStart(2, "0");
     $("cardText").textContent = text;
@@ -391,6 +392,7 @@
     finaleShown = true;
     currentIndex = -1;
     modal.classList.add("finale");
+    $("saveBtn").querySelector("span").textContent = "이 카드를 사진으로 저장하기";
     $("cardNo").textContent = "모든 목화가 피었어요";
     $("cardText").textContent = "";
     $("cardFrom").textContent = "2026 과학심화진탐아 학술제";
@@ -672,8 +674,149 @@
     return { blob, dataUrl: cv.toDataURL("image/png") };
   }
 
-  // local preview only: lets the card PNGs in cards/ be (re)generated from the browser
-  if (location.hostname === "localhost") window.__makeCard = (i) => makeCardBlob(MESSAGES[i]);
+
+  // the "모든 목화가 피었어요" card as an image: photo, the year's story, and the closing words
+  async function makeFinaleBlob() {
+    const W = 1080, H = 1560;
+    await Promise.all([
+      document.fonts.load('700 60px "Gowun Batang"'),
+      document.fonts.load('400 34px "Gowun Batang"'),
+      document.fonts.load('28px "Gowun Dodum"'),
+    ]).catch(() => {});
+    const [logo, photo] = await Promise.all([loadImg("logo.png").catch(() => null), loadImg("memory.jpg").catch(() => null)]);
+
+    const cv = document.createElement("canvas");
+    cv.width = W;
+    cv.height = H;
+    const ctx = cv.getContext("2d");
+
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, "#221c33");
+    bg.addColorStop(0.5, "#3a2a3f");
+    bg.addColorStop(1, "#5e3c36");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+    const glow = ctx.createRadialGradient(540, 600, 0, 540, 600, 700);
+    glow.addColorStop(0, "rgba(255,207,143,.32)");
+    glow.addColorStop(1, "rgba(255,207,143,0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < 80; i++) {
+      ctx.globalAlpha = 0.3 + Math.random() * 0.6;
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(Math.random() * W, Math.random() * H, 1.5 + Math.random() * 3.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    if (logo) {
+      ctx.fillStyle = "#fffaf2";
+      ctx.beginPath();
+      ctx.arc(540, 92, 48, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.drawImage(logo, 540 - 42, 92 - 42, 84, 84);
+    }
+    ctx.fillStyle = "#f4b47a";
+    ctx.font = '28px "Gowun Dodum", sans-serif';
+    ctx.fillText("2026 동덕여자고등학교 · 1학년 과학심화진탐아 학술제", 540, 180);
+    ctx.fillStyle = "#f7ecdc";
+    ctx.font = '700 60px "Gowun Batang", serif';
+    ctx.shadowColor = "rgba(244,180,122,.45)";
+    ctx.shadowBlur = 24;
+    ctx.fillText("모든 목화가 피었어요", 540, 252);
+    ctx.shadowBlur = 0;
+
+    // polaroid photo, slightly tilted
+    const pw = 840, ph = pw * 670 / 1200, frameW = pw + 36, frameH = ph + 104;
+    ctx.save();
+    ctx.translate(540, 318 + frameH / 2);
+    ctx.rotate(-1.6 * Math.PI / 180);
+    ctx.shadowColor = "rgba(0,0,0,.4)";
+    ctx.shadowBlur = 36;
+    ctx.shadowOffsetY = 14;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(-frameW / 2, -frameH / 2, frameW, frameH);
+    ctx.shadowColor = "transparent";
+    if (photo) ctx.drawImage(photo, -pw / 2, -frameH / 2 + 18, pw, ph);
+    ctx.fillStyle = "#806b56";
+    ctx.font = '400 32px "Gowun Batang", serif';
+    ctx.fillText("2026. 11. 11. 우리의 학술제", 0, frameH / 2 - 46);
+    ctx.restore();
+
+    // paper with the year's story
+    const qx = 90, qy = 930, qw = 900, qh = 530;
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,.35)";
+    ctx.shadowBlur = 40;
+    ctx.shadowOffsetY = 16;
+    ctx.fillStyle = "#fffaf2";
+    roundRect(ctx, qx, qy, qw, qh, 36);
+    ctx.fill();
+    ctx.restore();
+
+    // spring · summer · autumn
+    const seasons = [["봄", "주제를 심고"], ["여름", "실험으로 키우고"], ["가을", "결실을 맺다"]];
+    const sx = [330, 540, 750], sy = 995;
+    ctx.strokeStyle = "#e3d2b8";
+    ctx.lineWidth = 3;
+    ctx.setLineDash([8, 8]);
+    ctx.beginPath();
+    ctx.moveTo(sx[0], sy);
+    ctx.lineTo(sx[2], sy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    seasons.forEach(([name, sub], k) => {
+      ctx.fillStyle = "#efe3cc";
+      ctx.beginPath();
+      ctx.arc(sx[k], sy, 22, 0, Math.PI * 2);
+      ctx.fill();
+      if (k === 0) { ctx.fillStyle = "#6f4b31"; ctx.beginPath(); ctx.arc(sx[k], sy, 8, 0, Math.PI * 2); ctx.fill(); }
+      if (k === 1) {
+        ctx.fillStyle = "#fbf1cf"; ctx.beginPath(); ctx.arc(sx[k], sy, 16, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#b24f6a"; ctx.beginPath(); ctx.arc(sx[k], sy, 6, 0, Math.PI * 2); ctx.fill();
+      }
+      if (k === 2) {
+        ctx.fillStyle = "#8a5b37"; ctx.beginPath(); ctx.arc(sx[k], sy, 18, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(sx[k], sy, 14, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.fillStyle = "#3a2c20";
+      ctx.font = '700 30px "Gowun Batang", serif';
+      ctx.fillText(name, sx[k], sy + 48);
+      ctx.fillStyle = "#806b56";
+      ctx.font = '22px "Gowun Dodum", sans-serif';
+      ctx.fillText(sub, sx[k], sy + 82);
+    });
+
+    ctx.fillStyle = "#5a4636";
+    ctx.font = '400 31px "Gowun Batang", serif';
+    [["목화는 봄에 씨를 심어 여름 내내 자라고,", 1140], ["가을이 되어서야 하얀 솜을 피워요.", 1186],
+     ["주제를 고민하고, 실험하고, 고쳐 쓰고,", 1250], ["마침내 무대에 선 여러분의 한 해도 그랬어요.", 1296]]
+      .forEach(([t, y]) => ctx.fillText(t, 540, y));
+    ctx.fillStyle = "#3a2c20";
+    ctx.font = '700 36px "Gowun Batang", serif';
+    ctx.fillText("오늘 피어난 목화솜 한 송이 한 송이가", 540, 1370);
+    ctx.fillText("여러분이 1년 동안 노력한 결실입니다.", 540, 1420);
+
+    ctx.fillStyle = "#cfb9a0";
+    ctx.font = '26px "Gowun Dodum", sans-serif';
+    ctx.fillText("동덕여자고등학교 과학과", 540, 1512);
+
+    const blob = await new Promise((res) => cv.toBlob(res, "image/png"));
+    return { blob, dataUrl: cv.toDataURL("image/png") };
+  }
+
+  // a card is either a message number (0, 1, …) or "finale"
+  const cardSlug = (k) => (k === "finale" ? "finale" : String(k + 1).padStart(2, "0"));
+  const slugToKey = (s) => (s === "finale" ? "finale" : parseInt(s, 10) - 1);
+  const cardPath = (k) => "cards/" + cardSlug(k) + ".jpg";
+  const cardName = (k) => "eungwon-" + cardSlug(k) + ".jpg";
+  const drawCard = (k) => (k === "finale" ? makeFinaleBlob() : makeCardBlob(MESSAGES[k]));
+
+  // local preview only: lets the card images in cards/ be (re)generated from the browser
+  if (location.hostname === "localhost") window.__makeCard = (k) => drawCard(k);
 
   const saveBtn = $("saveBtn");
   const UA = navigator.userAgent || "";
@@ -684,7 +827,6 @@
   const IS_PHONE = window.matchMedia("(pointer: coarse)").matches;
   const IS_IOS = /iPhone|iPad|iPod/i.test(UA) || (/Macintosh/i.test(UA) && navigator.maxTouchPoints > 1);
   const IS_ANDROID = /Android/i.test(UA);
-  const cardPath = (i) => "cards/" + String(i + 1).padStart(2, "0") + ".jpg";
 
   // sheet showing the finished card: long-press the picture, or use the download button
   const sheet = document.createElement("div");
@@ -747,7 +889,7 @@
   function directDownload(i) {
     const a = document.createElement("a");
     a.href = cardPath(i);
-    a.download = "eungwon-" + String(i + 1).padStart(2, "0") + ".jpg";
+    a.download = cardName(i);
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -760,7 +902,7 @@
       if (sheetFile) navigator.share({ files: [sheetFile] }).catch(() => {});
     } else if (act && act.dataset.act === "external") {
       // reopen this page in the phone's own browser, already showing this card
-      const target = location.origin + location.pathname + "?save=" + String(+sheetImg.dataset.i + 1).padStart(2, "0");
+      const target = location.origin + location.pathname + "?save=" + sheetImg.dataset.slug;
       if (IN_KAKAO) location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(target);
       else sheetTip.innerHTML = "오른쪽 위 메뉴(⋮ 또는 ···)에서 <b>‘다른 브라우저로 열기’</b>를 눌러 주세요.";
     }
@@ -768,16 +910,16 @@
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !sheet.hidden) sheet.hidden = true; });
 
   saveBtn.addEventListener("click", () => {
-    if (currentIndex >= 0) saveCard(currentIndex, saveBtn);
+    if (modal.classList.contains("finale")) saveCard("finale", saveBtn);
+    else if (currentIndex >= 0) saveCard(currentIndex, saveBtn);
   });
 
   // if the ready-made card file can't be loaded, draw the card here instead
   sheetImg.addEventListener("error", async () => {
-    const i = +sheetImg.dataset.i;
-    if (sheetImg.dataset.fallback === "1" || isNaN(i)) return;
+    if (sheetImg.dataset.fallback === "1" || !sheetImg.dataset.slug) return;
     sheetImg.dataset.fallback = "1";
     try {
-      const { dataUrl } = await makeCardBlob(MESSAGES[i]);
+      const { dataUrl } = await drawCard(slugToKey(sheetImg.dataset.slug));
       sheetImg.src = dataUrl;
       sheetDl.href = dataUrl;
     } catch (err) {
@@ -785,19 +927,19 @@
     }
   });
 
-  function showCardSheet(i) {
-    sheetImg.dataset.i = i;
+  function showCardSheet(k) {
+    sheetImg.dataset.slug = cardSlug(k);
     sheetImg.dataset.fallback = "0";
-    openSheet(cardPath(i), "eungwon-" + String(i + 1).padStart(2, "0") + ".jpg");
+    openSheet(cardPath(k), cardName(k));
   }
 
-  // shared by the message popup and every card in "메시지 모아 보기"
-  function saveCard(i, btn) {
+  // shared by the message popup, the final card, and every card in "메시지 모아 보기"
+  function saveCard(k, btn) {
     // in-app browsers (KakaoTalk etc.) and iPhone: show the card picture to long-press / save
-    if (IN_APP || IS_IOS || (IS_PHONE && !IS_ANDROID)) return showCardSheet(i);
+    if (IN_APP || IS_IOS || (IS_PHONE && !IS_ANDROID)) return showCardSheet(k);
 
     // Android browsers and computers: save the file straight away (no share sheet)
-    directDownload(i);
+    directDownload(k);
     const label = btn.querySelector("span");
     const original = label.textContent;
     label.textContent = IS_ANDROID ? "저장했어요 · 갤러리/다운로드 폴더" : "저장했어요";
@@ -806,13 +948,14 @@
 
   // opened from KakaoTalk via "다른 브라우저로 열기": go straight to that card
   (function handleSaveLink() {
-    const n = parseInt(new URLSearchParams(location.search).get("save"), 10);
-    if (!(n >= 1 && n <= MESSAGES.length)) return;
+    const v = new URLSearchParams(location.search).get("save");
+    if (!v) return;
+    const k = slugToKey(v);
+    if (k !== "finale" && !(k >= 0 && k < MESSAGES.length)) return;
     history.replaceState(null, "", location.pathname);
-    const i = n - 1;
     setTimeout(() => {
-      showCardSheet(i);
-      if (!IN_APP && !IS_IOS) directDownload(i);
+      showCardSheet(k);
+      if (!IN_APP && !IS_IOS) directDownload(k);
     }, 600);
   })();
 
