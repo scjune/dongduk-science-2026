@@ -69,11 +69,15 @@
     "</g>" +
     "</g>";
   const BRACT_D ="M-3 22 C -18 26 -34 14 -33 -4 L -27 1 L -29 -11 L -21 -4 L -20 -16 L -13 -3 C -10 8 -6 16 -3 22 Z";
+  const IMG_COTTON5 = '<image href="assets/cotton5.png" x="-48" y="-48" width="96" height="96"/>';
+  const IMG_COTTON4 = '<image href="assets/cotton4.png" x="-48" y="-48" width="96" height="96"/>';
+  const IMG_CAPSULE = '<image href="assets/capsule.png" x="-28" y="-28" width="56" height="56"/>';
   const BOLL_MARKUP =
     '<circle class="hit" r="46"/>' +
     '<circle class="halo" r="32" fill="url(#gHalo)"/>' +
-    '<g class="capsule">' + CAPSULE_MARKUP + "</g>" +
-    '<g class="cotton">' + COTTON_MARKUP + "</g>";
+    // pre-rendered pictures (assets/) instead of live blur filters: much lighter on phones
+    '<g class="capsule">' + IMG_CAPSULE + "</g>" +
+    '<g class="cotton">' + IMG_COTTON5 + "</g>";
 
   /* ---------------- plant geometry (portrait, mobile-first) ---------------- */
   // A cotton plant at harvest time: a sturdy trunk, branches forking outward into
@@ -265,7 +269,7 @@
     if (from) mk("line", { x1: from[0].toFixed(1), y1: from[1].toFixed(1), x2: c[0].toFixed(1), y2: c[1].toFixed(1), class: "stalk thin" }, L.branches);
     const g = mk("g", { class: "decor-cotton", transform: "translate(" + pt(c) + ") rotate(" + rot.toFixed(1) + ") scale(" + sc.toFixed(2) + ")" }, L.decor);
     const cj = mk("g", { class: "cj", "data-y": c[1].toFixed(0) }, g);
-    cj.innerHTML = rnd() < 0.45 ? COTTON_MARKUP_4 : COTTON_MARKUP;
+    cj.innerHTML = rnd() < 0.45 ? IMG_COTTON4 : IMG_COTTON5;
   }
   cands.forEach((s) => {
     if (s.used) return;
@@ -1051,7 +1055,7 @@
   /* ---------------- drifting cotton ---------------- */
   if (!reduceMotion) {
     const layer = $("drift");
-    const count = window.innerWidth < 600 ? 26 : 40;
+    const count = window.innerWidth < 600 ? 14 : 28;
     for (let i = 0; i < count; i++) {
       const d = document.createElement("div");
       d.className = "drift";
