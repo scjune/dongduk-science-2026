@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#221c33">
+  <title>응원 한 송이</title>
+  <meta name="description" content="2026 동덕여자고등학교 과학심화진탐아 학술제 - 1학년 학부모님이 전하는 응원 메시지">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="drift-layer" id="drift" aria-hidden="true"></div>
+
+  <header class="hero">
+    <img class="logo" src="logo.png" alt="동덕여자고등학교" width="56" height="56">
+    <p class="eyebrow">2026 동덕여자고등학교 · 과학심화진탐아 학술제</p>
+    <h1>응원 한 송이</h1>
+    <p class="lead" id="lead">봄부터 가꾼 여러분의 탐구가 학술제에서 결실을 맺었어요.<br> 그 모습을 지켜본 학부모님들이 응원을 보내 주셨습니다.<br> <strong>가지마다 맺힌 목화를 눌러 보세요.</strong></p>
+    <div class="progress" role="status" aria-live="polite">
+      <span><b id="openedCount">0</b> / <span id="totalCount">0</span> 송이 피움</span>
+      <span class="bar" aria-hidden="true"><i id="bar"></i></span>
+    </div>
+  </header>
+
+  <main>
+    <div class="plant-wrap">
+      <svg id="plant" viewBox="0 0 520 880" role="img" aria-label="목화 나무. 가지마다 맺힌 목화를 누르면 응원 메시지가 열립니다."></svg>
+    </div>
+
+    <div class="tools">
+      <button class="btn" id="showAll" type="button">메시지 모아 보기</button>
+      <button class="btn ghost" id="reset" type="button">목화 다시 닫기</button>
+    </div>
+
+    <section class="all" id="allMessages" hidden>
+      <h2>학부모님들의 응원 메시지</h2>
+      <div class="grid" id="grid"></div>
+    </section>
+  </main>
+
+  <div class="modal" id="modal" hidden>
+    <div class="backdrop" data-close></div>
+    <article class="card" role="dialog" aria-modal="true" aria-labelledby="cardText">
+      <div class="card-icon" id="cardIcon" aria-hidden="true"></div>
+      <button class="close-x" type="button" data-close aria-label="닫기">&times;</button>
+      <p class="card-no" id="cardNo"></p>
+      <p class="card-text" id="cardText"></p>
+      <div class="finale-body">
+        <ol class="seasons" aria-label="목화가 자라는 한 해">
+          <li><span class="dot seed"></span>봄<small>주제를 심고</small></li>
+          <li><span class="dot bloom"></span>여름<small>실험으로 키우고</small></li>
+          <li><span class="dot boll-done"></span>가을<small>결실을 맺다</small></li>
+        </ol>
+        <p>목화는 봄에 씨를 심어 여름 내내 자라고,<br>가을이 되어서야 하얀 솜을 피워요.</p>
+        <p>주제를 고민하고, 실험하고, 고쳐 쓰고,<br>마침내 무대에 선 여러분의 한 해도 그랬어요.</p>
+        <p class="finale-strong">오늘 피어난 목화솜 한 송이 한 송이가<br>여러분이 1년 동안 노력한 결실입니다.</p>
+      </div>
+      <p class="card-from" id="cardFrom" hidden></p>
+      <div class="card-actions">
+        <button class="btn ghost" type="button" data-close>닫기</button>
+        <button class="btn primary" type="button" id="nextBtn">다음 목화 피우기</button>
+      </div>
+    </article>
+  </div>
+
+  <script src="messages.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,489 @@
+:root {
+  /* winter night page */
+  --night-1: #221c33;
+  --night-2: #3a2a3f;
+  --night-3: #5e3c36;
+  --page-ink: #f7ecdc;
+  --page-muted: #cfb9a0;
+  --glow: #f4b47a;
+  /* warm paper cards */
+  --ink: #3a2c20;
+  --muted: #806b56;
+  --accent: #8f2c45;   /* school emblem burgundy */
+  --accent-dark: #74203a;
+  --card: #fffaf2;
+  --line: #ecdcc5;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+html { background: var(--night-1); }
+
+body {
+  min-height: 100vh;
+  font-family: "Gowun Dodum", system-ui, sans-serif;
+  color: var(--page-ink);
+  background-color: var(--night-1);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(244, 180, 122, .22), transparent 70%),
+    linear-gradient(180deg, var(--night-1) 0%, var(--night-2) 50%, var(--night-3) 100%);
+  background-attachment: fixed;
+  overflow-x: hidden;
+  word-break: keep-all;
+  -webkit-tap-highlight-color: transparent;
+}
+/* tiny stars */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 45% 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 18%, rgba(255,240,220,.8), transparent),
+    radial-gradient(1px 1px at 28% 8%, rgba(255,240,220,.6), transparent),
+    radial-gradient(1.4px 1.4px at 44% 22%, rgba(255,240,220,.7), transparent),
+    radial-gradient(1px 1px at 63% 12%, rgba(255,240,220,.6), transparent),
+    radial-gradient(1.3px 1.3px at 78% 26%, rgba(255,240,220,.8), transparent),
+    radial-gradient(1px 1px at 90% 9%, rgba(255,240,220,.6), transparent),
+    radial-gradient(1px 1px at 6% 40%, rgba(255,240,220,.5), transparent),
+    radial-gradient(1.2px 1.2px at 95% 38%, rgba(255,240,220,.6), transparent);
+}
+
+/* ---------- header ---------- */
+.hero {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 16px 0;
+  text-align: center;
+}
+.logo {
+  display: block;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 14px;
+  padding: 3px;
+  background: var(--card);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .2), 0 0 22px rgba(244, 180, 122, .35);
+}
+.eyebrow {
+  margin: 0 0 10px;
+  font-size: .85rem;
+  letter-spacing: .08em;
+  color: var(--glow);
+}
+h1 {
+  text-shadow: 0 2px 24px rgba(244, 180, 122, .35);
+  margin: 0;
+  font-family: "Gowun Batang", serif;
+  font-weight: 700;
+  font-size: clamp(2rem, 6vw, 3rem);
+  letter-spacing: -.01em;
+}
+.lead {
+  margin: 12px 0 18px;
+  line-height: 1.7;
+  color: var(--page-muted);
+  font-size: clamp(.95rem, 2.6vw, 1.05rem);
+}
+.lead strong { color: var(--page-ink); font-weight: 400; }
+.progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  font-size: .92rem;
+  background: rgba(255, 255, 255, .07);
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 999px;
+}
+.progress b { color: var(--glow); font-size: 1.05rem; }
+.bar {
+  width: 110px;
+  height: 6px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .14);
+  border-radius: 6px;
+}
+.bar i {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #f8d9a8, var(--glow));
+  box-shadow: 0 0 10px rgba(244, 180, 122, .7);
+  border-radius: inherit;
+  transition: width .6s cubic-bezier(.34, 1.4, .64, 1);
+}
+
+/* ---------- plant ---------- */
+main { position: relative; z-index: 1; }
+.plant-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 8px;
+}
+#plant {
+  display: block;
+  margin: 0 auto;
+  width: min(100%, calc(84vh * 520 / 880));
+  height: auto;
+  aspect-ratio: 520 / 880;
+  overflow: visible;
+}
+
+.stem { fill: none; stroke: #8d6142; stroke-linecap: round; }
+.stalk { stroke: #8d6142; stroke-width: 3.5; stroke-linecap: round; }
+.stalk.thin { stroke-width: 2.2; }
+.bark { fill: none; stroke: rgba(40, 24, 14, .45); stroke-width: 1.6; stroke-linecap: round; }
+
+/* clickable (still closed) bolls glow softly */
+.halo {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: halo 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+.boll.open .halo { display: none; }
+@keyframes halo {
+  0%, 100% { opacity: .45; scale: .9; }
+  50% { opacity: 1; scale: 1.1; }
+}
+.snowcap { fill: none; stroke: #fffaf3; stroke-width: 4.5; stroke-linecap: round; opacity: .92; }
+.leaf-back { fill: #3b3329; opacity: .55; }
+.leaf { stroke: rgba(40, 25, 20, .45); stroke-width: 1; stroke-linejoin: round; }
+.vein { fill: none; stroke: #3c2a1e; stroke-width: 1.1; opacity: .4; stroke-linecap: round; }
+
+.petal { fill: #fbf1cf; stroke: #e6d29a; stroke-width: 1; }
+.flower-eye { fill: #b24f6a; }
+.flower-pistil { fill: #f1cf5e; }
+
+.bract { fill: #7b9a48; stroke: #556f2f; stroke-width: 1; stroke-linejoin: round; }
+.pod { fill: url(#gBoll); stroke: #56702f; stroke-width: 1.2; }
+.seam { fill: none; stroke: #56702f; stroke-width: 1; opacity: .55; }
+.shine { fill: #fff; opacity: .35; }
+.calyx { fill: #8a5b37; stroke: #5c3b22; stroke-width: 1.2; stroke-linejoin: round; }
+.puff { fill: url(#gCotton); }
+
+.boll {
+  cursor: pointer;
+  outline: none;
+  transform-box: fill-box;
+  transform-origin: 50% 85%;
+  animation: sway var(--sway-dur, 4.5s) ease-in-out infinite;
+  animation-delay: var(--sway-delay, 0s);
+}
+.hit { fill: transparent; stroke: transparent; stroke-width: 3; stroke-dasharray: 6 6; }
+.boll:focus-visible .hit { stroke: var(--accent); }
+
+.capsule, .cotton {
+  transform-box: fill-box;
+  transform-origin: 50% 70%;
+}
+.capsule { transition: scale .25s ease; }
+@media (hover: hover) {
+  .boll:not(.open):hover .capsule { scale: 1.1; }
+}
+.cotton { scale: 0; opacity: 0; }
+
+.boll.shaking .capsule { animation: shake .38s ease-in-out; }
+.boll.open .capsule { animation: burst .32s ease-out forwards; }
+.boll.open .cotton { animation: bloom .65s cubic-bezier(.34, 1.56, .64, 1) forwards; }
+.boll.open:hover .cotton { filter: brightness(1.04); }
+
+@keyframes sway {
+  0%, 100% { rotate: -2.5deg; }
+  50% { rotate: 2.5deg; }
+}
+@keyframes shake {
+  0% { rotate: 0deg; scale: 1; }
+  20% { rotate: -10deg; scale: 1.08; }
+  40% { rotate: 9deg; scale: 1.12; }
+  60% { rotate: -7deg; scale: 1.16; }
+  80% { rotate: 5deg; scale: 1.2; }
+  100% { rotate: 0deg; scale: 1.24; }
+}
+@keyframes burst {
+  0% { scale: 1.24; opacity: 1; }
+  100% { scale: 1.7; opacity: 0; }
+}
+@keyframes bloom {
+  0% { scale: .2; opacity: 0; }
+  40% { opacity: 1; }
+  100% { scale: 1; opacity: 1; }
+}
+
+/* burst particles */
+.fluff {
+  position: fixed;
+  z-index: 40;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #fff 0%, #f6f1e7 55%, rgba(246, 241, 231, 0) 72%);
+}
+.pop-ring {
+  position: fixed;
+  z-index: 39;
+  pointer-events: none;
+  border: 3px solid rgba(255, 255, 255, .95);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(255, 255, 255, .8);
+}
+
+/* ---------- buttons ---------- */
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  padding: 4px 16px 28px;
+}
+.btn {
+  font: inherit;
+  font-size: .95rem;
+  padding: 10px 20px;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .2s, transform .15s, box-shadow .2s;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px -8px rgba(90, 60, 30, .35); }
+.btn:active { transform: translateY(0); }
+.btn:focus-visible { outline: 2px solid var(--glow); outline-offset: 2px; }
+.btn.ghost { background: transparent; color: var(--page-ink); border-color: rgba(255, 255, 255, .25); }
+.card .btn.ghost { color: var(--ink); border-color: var(--line); }
+.btn.primary { color: #fff; background: var(--accent); border-color: var(--accent); }
+.btn.primary:hover { background: var(--accent-dark); }
+.btn.celebrate { animation: glow 1.8s ease-in-out infinite; }
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 180, 122, .55); }
+  50% { box-shadow: 0 0 0 12px rgba(244, 180, 122, 0); }
+}
+
+/* ---------- all messages ---------- */
+.all {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 8px 16px 24px;
+}
+.all h2 {
+  margin: 0 0 20px;
+  text-align: center;
+  font-family: "Gowun Batang", serif;
+  font-size: 1.5rem;
+}
+.grid { columns: 3 260px; column-gap: 16px; }
+.note {
+  break-inside: avoid;
+  margin: 0 0 16px;
+  padding: 22px 22px 18px;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 10px 24px -18px rgba(90, 60, 30, .5);
+  animation: rise .5s ease both;
+}
+.note-no { font-size: .75rem; letter-spacing: .12em; color: var(--muted); }
+.note p {
+  margin: 8px 0 10px;
+  font-family: "Gowun Batang", serif;
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+.note-from { font-size: .85rem; color: var(--accent); }
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+
+main { padding-bottom: 32px; }
+
+/* ---------- modal ---------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 56px 16px 16px;
+}
+.modal[hidden] { display: none; }
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 14, 26, .55);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity .3s;
+}
+.card {
+  position: relative;
+  width: min(460px, 100%);
+  isolation: isolate;
+  padding: 52px 28px 24px;
+  text-align: center;
+  color: var(--ink);
+  background: var(--card);
+  border-radius: 24px;
+  box-shadow: 0 0 60px -10px rgba(244, 180, 122, .45), 0 30px 60px -20px rgba(0, 0, 0, .5);
+  opacity: 0;
+  transform: translateY(24px) scale(.9);
+  transition: opacity .3s, transform .5s cubic-bezier(.34, 1.4, .64, 1);
+}
+.modal.show .backdrop { opacity: 1; }
+.modal.show .card { opacity: 1; transform: none; }
+
+.card-icon {
+  position: absolute;
+  top: -46px;
+  left: 50%;
+  width: 96px;
+  height: 96px;
+  margin-left: -48px;
+  padding: 6px;
+  background: var(--card);
+  border-radius: 50%;
+  box-shadow: 0 8px 20px -10px rgba(60, 40, 20, .4);
+}
+.card-icon svg { width: 100%; height: 100%; display: block; }
+.close-x {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.close-x:hover { background: #f3ebde; }
+.card-no { margin: 0; font-size: .8rem; letter-spacing: .12em; color: var(--muted); }
+.card-text {
+  position: relative;
+  margin: 14px 0 12px;
+  font-family: "Gowun Batang", serif;
+  font-size: var(--fs, 1.3rem);
+  line-height: 1.75;
+}
+.card-text::before, .card-text::after {
+  font-family: "Gowun Batang", serif;
+  font-size: 1.6em;
+  line-height: 0;
+  color: var(--accent);
+  opacity: .35;
+}
+.card-text::before { content: "“"; margin-right: .1em; vertical-align: -.35em; }
+.card-text::after { content: "”"; margin-left: .1em; vertical-align: -.35em; }
+.card-from { margin: 0; font-size: .9rem; color: var(--accent); }
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+/* ---------- drifting cotton ---------- */
+.drift-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.drift {
+  position: absolute;
+  top: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 30%, rgba(255, 255, 255, 0) 72%);
+  animation: snow linear infinite;
+}
+@keyframes snow {
+  from { transform: translate(0, 0); }
+  50% { transform: translate(calc(var(--dx, 40px) * -.5), 55vh); }
+  to { transform: translate(var(--dx, 40px), 112vh); }
+}
+
+/* ---------- finale ---------- */
+.finale-body { display: none; }
+.modal.finale .card-text { display: none; }
+.modal.finale .finale-body { display: block; }
+.finale-body p {
+  margin: 0 0 10px;
+  font-family: "Gowun Batang", serif;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+.finale-body .finale-strong {
+  margin: 16px 0 14px;
+  font-weight: 700;
+  font-size: 1.12rem;
+  color: var(--ink);
+}
+.seasons {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 16px 0 18px;
+  padding: 0;
+  list-style: none;
+}
+.seasons li {
+  position: relative;
+  flex: 1;
+  max-width: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-family: "Gowun Batang", serif;
+  font-weight: 700;
+  font-size: .95rem;
+}
+.seasons li + li::before {
+  content: "";
+  position: absolute;
+  top: 15px;
+  right: 50%;
+  width: 100%;
+  border-top: 2px dashed var(--line);
+  z-index: -1;
+}
+.seasons small { font-family: "Gowun Dodum", sans-serif; font-weight: 400; font-size: .75rem; color: var(--muted); }
+.dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--card);
+  box-shadow: 0 0 0 1px var(--line);
+}
+.dot.seed { background: radial-gradient(circle, #6f4b31 0 5px, #efe3cc 6px); }
+.dot.bloom { background: radial-gradient(circle, #b24f6a 0 4px, #fbf1cf 5px 12px, #efe3cc 13px); }
+.dot.boll-done { background: radial-gradient(circle at 45% 40%, #fff 0 9px, #8a5b37 10px 12px, #efe3cc 13px); }
+
+.m-br { display: none; }
+
+@media (max-width: 520px) {
+  .hero { padding-top: 22px; }
+  .logo { width: 48px; height: 48px; margin-bottom: 10px; }
+  .eyebrow { font-size: .78rem; letter-spacing: .04em; }
+  .m-br { display: inline; }
+  .lead { line-height: 1.65; }
+  .lead br { display: none; }
+  .lead strong { display: block; margin-top: 6px; }
+  .card { padding: 50px 20px 20px; }
+  .card-actions .btn { flex: 1; }
+  .grid { columns: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boll, .drift, .halo { animation: none !important; }
+  .drift-layer { display: none; }
+}
