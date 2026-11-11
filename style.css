@@ -316,6 +316,14 @@ main { position: relative; z-index: 1; }
 @keyframes rise { from { opacity: 0; transform: translateY(12px); } }
 
 main { padding-bottom: 32px; }
+.credit {
+  margin: -12px 0 24px;
+  text-align: center;
+  font-size: .8rem;
+  letter-spacing: .06em;
+  color: var(--page-muted);
+  opacity: .8;
+}
 
 /* ---------- modal ---------- */
 .modal {
