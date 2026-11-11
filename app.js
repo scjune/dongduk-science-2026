@@ -748,11 +748,10 @@
     ctx.fillText("모든 목화가 피었어요", 540, 252);
     ctx.shadowBlur = 0;
 
-    // polaroid photo, slightly tilted
+    // polaroid photo, kept level
     const pw = 840, ph = pw * 670 / 1200, frameW = pw + 36, frameH = ph + 104;
     ctx.save();
     ctx.translate(540, 318 + frameH / 2);
-    ctx.rotate(-1.6 * Math.PI / 180);
     ctx.shadowColor = "rgba(0,0,0,.4)";
     ctx.shadowBlur = 36;
     ctx.shadowOffsetY = 14;
