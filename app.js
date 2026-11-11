@@ -527,6 +527,186 @@
     }
   });
 
+  /* ---------------- save a message as a card image ---------------- */
+  const CARD_W = 1080, CARD_H = 1350;
+  const loadImg = (src) => new Promise((res, rej) => {
+    const im = new Image();
+    im.onload = () => res(im);
+    im.onerror = rej;
+    im.src = src;
+  });
+  function cottonImageURL() {
+    // the same cotton drawing, made standalone (inline colours) so it can be drawn on a canvas
+    const markup = COTTON_MARKUP
+      .replace('class="calyx"', 'fill="#8a5b37" stroke="#5c3b22" stroke-width="1.2" stroke-linejoin="round"')
+      .replace(/class="puff"/g, 'fill="url(#c)"')
+      .replace('filter="url(#fuzz)"', 'filter="url(#f)"');
+    const svgStr =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-48 -48 96 96" width="384" height="384"><defs>' +
+      '<radialGradient id="c" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".7" stop-color="#fbf8f2"/><stop offset="1" stop-color="#e2d9c9"/></radialGradient>' +
+      '<filter id="f" x="-30%" y="-30%" width="160%" height="160%"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G"/></filter>' +
+      "</defs>" + markup + "</svg>";
+    return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgStr);
+  }
+  function wrapText(ctx, text, maxW) {
+    const lines = [];
+    let line = "";
+    text.split(/\s+/).forEach((word) => {
+      const test = line ? line + " " + word : word;
+      if (ctx.measureText(test).width <= maxW) { line = test; return; }
+      if (line) lines.push(line);
+      if (ctx.measureText(word).width <= maxW) { line = word; return; }
+      let part = "";
+      for (const ch of word) {
+        if (ctx.measureText(part + ch).width > maxW) { lines.push(part); part = ch; } else part += ch;
+      }
+      line = part;
+    });
+    if (line) lines.push(line);
+    return lines;
+  }
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  async function makeCardBlob(text) {
+    await Promise.all([
+      document.fonts.load('700 64px "Gowun Batang"'),
+      document.fonts.load('400 48px "Gowun Batang"'),
+      document.fonts.load('28px "Gowun Dodum"'),
+    ]).catch(() => {});
+    const [logo, cotton] = await Promise.all([loadImg("logo.png").catch(() => null), loadImg(cottonImageURL()).catch(() => null)]);
+
+    const cv = document.createElement("canvas");
+    cv.width = CARD_W;
+    cv.height = CARD_H;
+    const ctx = cv.getContext("2d");
+
+    // winter night background with a warm glow
+    const bg = ctx.createLinearGradient(0, 0, 0, CARD_H);
+    bg.addColorStop(0, "#221c33");
+    bg.addColorStop(0.5, "#3a2a3f");
+    bg.addColorStop(1, "#5e3c36");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, CARD_W, CARD_H);
+    const glow = ctx.createRadialGradient(540, 420, 0, 540, 420, 560);
+    glow.addColorStop(0, "rgba(255,207,143,.35)");
+    glow.addColorStop(1, "rgba(255,207,143,0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, CARD_W, CARD_H);
+    // snow
+    for (let i = 0; i < 70; i++) {
+      ctx.globalAlpha = 0.3 + Math.random() * 0.6;
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(Math.random() * CARD_W, Math.random() * CARD_H, 1.5 + Math.random() * 3.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    // logo
+    if (logo) {
+      ctx.fillStyle = "#fffaf2";
+      ctx.beginPath();
+      ctx.arc(540, 110, 52, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.drawImage(logo, 540 - 46, 110 - 46, 92, 92);
+    }
+    ctx.fillStyle = "#f4b47a";
+    ctx.font = '28px "Gowun Dodum", sans-serif';
+    ctx.fillText("2026 동덕여자고등학교 · 1학년 과학심화진탐아 학술제", 540, 205);
+    ctx.fillStyle = "#f7ecdc";
+    ctx.font = '700 66px "Gowun Batang", serif';
+    ctx.shadowColor = "rgba(244,180,122,.45)";
+    ctx.shadowBlur = 24;
+    ctx.fillText("응원 한 송이", 540, 282);
+    ctx.shadowBlur = 0;
+
+    // cotton
+    if (cotton) ctx.drawImage(cotton, 540 - 95, 330, 190, 190);
+
+    // paper card
+    const px = 90, py = 540, pw = 900, ph = 600;
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,.35)";
+    ctx.shadowBlur = 40;
+    ctx.shadowOffsetY = 16;
+    ctx.fillStyle = "#fffaf2";
+    roundRect(ctx, px, py, pw, ph, 36);
+    ctx.fill();
+    ctx.restore();
+
+    // message, as large as fits
+    const maxW = pw - 150, maxH = ph - 170;
+    let size = 64, lines, lh;
+    for (; size >= 30; size -= 2) {
+      ctx.font = '400 ' + size + 'px "Gowun Batang", serif';
+      lines = wrapText(ctx, text, maxW);
+      lh = size * 1.6;
+      if (lines.length * lh <= maxH) break;
+    }
+    const cy = py + ph / 2 - 10;
+    const top = cy - ((lines.length - 1) * lh) / 2;
+    ctx.fillStyle = "#3a2c20";
+    lines.forEach((ln, i) => ctx.fillText(ln, 540, top + i * lh));
+    // quote marks
+    ctx.fillStyle = "rgba(143,44,69,.35)";
+    ctx.font = '700 120px "Gowun Batang", serif';
+    ctx.fillText("“", px + 70, py + 80);
+    ctx.fillText("”", px + pw - 70, py + ph - 50);
+
+    ctx.fillStyle = "#cfb9a0";
+    ctx.font = '26px "Gowun Dodum", sans-serif';
+    ctx.fillText("동덕여자고등학교 과학과", 540, 1250);
+
+    return new Promise((res) => cv.toBlob(res, "image/png"));
+  }
+
+  const saveBtn = $("saveBtn");
+  saveBtn.addEventListener("click", async () => {
+    if (currentIndex < 0) return;
+    const label = saveBtn.querySelector("span");
+    const original = label.textContent;
+    saveBtn.disabled = true;
+    label.textContent = "카드를 만드는 중…";
+    try {
+      const blob = await makeCardBlob(MESSAGES[currentIndex]);
+      const name = "응원한송이_" + String(currentIndex + 1).padStart(2, "0") + ".png";
+      const file = new File([blob], name, { type: "image/png" });
+      const isPhone = window.matchMedia("(pointer: coarse)").matches;
+      if (isPhone && navigator.canShare && navigator.canShare({ files: [file] })) {
+        // phones: open the share sheet so it can be saved to the photo album
+        await navigator.share({ files: [file], title: "응원 한 송이" }).catch(() => {});
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+      }
+      label.textContent = "저장했어요";
+    } catch (err) {
+      console.error(err);
+      label.textContent = "저장하지 못했어요. 다시 눌러 주세요";
+    }
+    setTimeout(() => {
+      label.textContent = original;
+      saveBtn.disabled = false;
+    }, 1800);
+  });
+
   /* ---------------- boll interaction ---------------- */
   function openBoll(el) {
     const i = +el.dataset.i;

@@ -437,6 +437,25 @@ main { padding-bottom: 32px; }
 .card-text::before { content: "“"; margin-right: .1em; vertical-align: -.35em; }
 .card-text::after { content: "”"; margin-left: .1em; vertical-align: -.35em; }
 .card-from { margin: 0; font-size: .9rem; color: var(--accent); }
+.save-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: .88rem;
+  color: var(--accent);
+  background: none;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.save-link:hover { background: #f6ece0; }
+.save-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.save-link[disabled] { opacity: .6; cursor: progress; }
+.save-link svg { width: 16px; height: 16px; }
+.modal.finale .save-link { display: none; }
 .card-actions {
   display: flex;
   flex-wrap: wrap;
@@ -475,9 +494,9 @@ main { padding-bottom: 32px; }
   overflow-y: auto;
 }
 .modal.finale .card-icon { display: none; }
-.modal.finale .card-no { margin-top: 4px; }
+.modal.finale .card-no { margin: 4px 0 18px; }
 .memory {
-  margin: 0 0 18px;
+  margin: 0 0 26px;
   padding: 8px 8px 10px;
   background: #fff;
   border-radius: 6px;
@@ -496,7 +515,7 @@ main { padding-bottom: 32px; }
   border-radius: 3px;
 }
 .memory figcaption {
-  margin-top: 8px;
+  margin-top: 10px;
   font-family: "Gowun Batang", serif;
   font-size: .85rem;
   color: var(--muted);
