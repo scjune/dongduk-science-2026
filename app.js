@@ -304,6 +304,11 @@
   let busy = false;
   let finaleShown = false;
   let lastFocus = null;
+  let usingKeyboard = false;
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Tab" || e.key === "Enter" || e.key === " ") usingKeyboard = true;
+  });
+  document.addEventListener("pointerdown", () => (usingKeyboard = false));
 
   $("totalCount").textContent = MESSAGES.length;
 
@@ -408,7 +413,10 @@
     modal.classList.remove("show");
     setTimeout(() => {
       modal.hidden = true;
-      if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+      // return focus only for keyboard users; after a tap/click the boll
+      // must not keep a focus ring around it
+      if (usingKeyboard && lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+      else if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
       if (cb) cb();
     }, reduceMotion ? 0 : 260);
   }

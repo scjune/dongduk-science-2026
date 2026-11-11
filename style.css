@@ -222,7 +222,7 @@ main { position: relative; z-index: 1; }
   animation-delay: var(--sway-delay, 0s);
 }
 .hit { fill: transparent; stroke: transparent; stroke-width: 3; stroke-dasharray: 6 6; }
-.boll:focus-visible .hit { stroke: var(--accent); }
+.boll:focus-visible .hit { stroke: var(--glow); }
 
 .capsule, .cotton {
   transform-box: fill-box;
@@ -397,8 +397,9 @@ main { padding-bottom: 32px; }
   width: 96px;
   height: 96px;
   margin-left: -48px;
-  padding: 6px;
-  background: var(--card);
+  padding: 10px;
+  background: radial-gradient(circle at 50% 40%, #5a4050, #2b2238);
+  border: 3px solid var(--card);
   border-radius: 50%;
   box-shadow: 0 8px 20px -10px rgba(60, 40, 20, .4);
 }
@@ -467,6 +468,39 @@ main { padding-bottom: 32px; }
 
 /* ---------- finale ---------- */
 .finale-body { display: none; }
+.modal.finale .card {
+  padding-top: 26px;
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+}
+.modal.finale .card-icon { display: none; }
+.modal.finale .card-no { margin-top: 4px; }
+.memory {
+  margin: 0 0 18px;
+  padding: 8px 8px 10px;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 10px 24px -12px rgba(60, 40, 20, .55), 0 0 0 1px var(--line);
+  transform: rotate(-1.5deg);
+}
+.modal.finale.show .memory { animation: drop-in .8s cubic-bezier(.34, 1.4, .64, 1) .15s both; }
+@keyframes drop-in {
+  from { opacity: 0; transform: translateY(-24px) rotate(-6deg) scale(.94); }
+  to { opacity: 1; transform: rotate(-1.5deg); }
+}
+.memory img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 3px;
+}
+.memory figcaption {
+  margin-top: 8px;
+  font-family: "Gowun Batang", serif;
+  font-size: .85rem;
+  color: var(--muted);
+}
 .modal.finale .card-text { display: none; }
 .modal.finale .finale-body { display: block; }
 .finale-body p {
